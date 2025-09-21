@@ -310,12 +310,13 @@ app.delete('/delete/:id', async (req, res) => {
   }
 });
 
-// ==== Serve static ====
-// app.use(express.static(__dirname));
+// Serve static files từ thư mục public
+app.use(express.static(path.join(__dirname, "public")));
 
 // ==== Listen all IP ====
-app.get('/', (req, res) => {
-  res.send('🚀 API Server đang chạy! Các endpoint: /files, /upload, /delete/:id ...');
+// Route gốc -> index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 // ✅ Xuất app ra cho Vercel
 module.exports = app;
