@@ -314,8 +314,8 @@ app.delete('/delete/:id', async (req, res) => {
 // app.use(express.static(__dirname));
 
 // ==== Listen all IP ====
-app.get('/', (req, res) => {
-  res.send('🚀 API Server đang chạy! Các endpoint: /files, /upload, /delete/:id ...');
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 // ✅ Xuất app ra cho Vercel
 module.exports = app;
