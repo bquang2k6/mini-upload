@@ -5,7 +5,7 @@ const { google } = require('googleapis');
 const path = require('path');
 
 // ==== Load environment variables ====
-require('dotenv').config();
+// require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,11 +31,11 @@ const oauth2Client = new google.auth.OAuth2(
 oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 const drive = google.drive({ version: 'v3', auth: oauth2Client });
-// const upload = multer({ dest: 'temp/' });
+const upload = multer({ dest: '/tmp' });
 app.use(express.json());
 
 // ==== Helper: Tạo thư mục temp nếu chưa có ====
-if (!fs.existsSync('temp')) fs.mkdirSync('temp');
+// if (!fs.existsSync('temp')) fs.mkdirSync('temp');
 
 // ==== Đảm bảo luôn có thư mục gốc "UploadServer" ====
 let uploadRootFolderId = null;
@@ -311,7 +311,7 @@ app.delete('/delete/:id', async (req, res) => {
 });
 
 // ==== Serve static ====
-app.use(express.static(__dirname));
+// app.use(express.static(__dirname));
 
 // ==== Listen all IP ====
 // app.listen(PORT, '0.0.0.0', () => {
