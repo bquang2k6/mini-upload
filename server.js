@@ -31,7 +31,7 @@ const oauth2Client = new google.auth.OAuth2(
 oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 const drive = google.drive({ version: 'v3', auth: oauth2Client });
-const upload = multer({ dest: 'temp/' });
+// const upload = multer({ dest: 'temp/' });
 app.use(express.json());
 
 // ==== Helper: Tạo thư mục temp nếu chưa có ====
@@ -314,7 +314,9 @@ app.delete('/delete/:id', async (req, res) => {
 app.use(express.static(__dirname));
 
 // ==== Listen all IP ====
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
-  console.log(`📁 Google Drive API configured with CLIENT_ID: ${CLIENT_ID?.substring(0, 10)}...`);
-});
+// app.listen(PORT, '0.0.0.0', () => {
+//   console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
+//   console.log(`📁 Google Drive API configured with CLIENT_ID: ${CLIENT_ID?.substring(0, 10)}...`);
+// });
+// ✅ Xuất app ra cho Vercel
+module.exports = app;
