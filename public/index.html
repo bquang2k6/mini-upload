@@ -575,6 +575,12 @@
         gap: 8px;
       }
     }
+    .square-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 12px;
+    }
   </style>
 </head>
 <body>
@@ -931,7 +937,7 @@ async function openCamera() {
         </div>
 
         <div class="photo-preview" id="photoPreview">
-          <img id="previewImage" alt="Preview">
+          <img id="previewImage" alt="Preview" class="square-image">
           <div class="preview-actions">
             <button class="btn btn-primary" onclick="uploadPhoto()">
               <span class="mdi mdi-upload"></span> Tải lên
@@ -1470,6 +1476,21 @@ window.onload = function() {
     }
   });
 };
+function makeSquare(image, size = 800) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  // Tính toán để crop hình vào ô vuông
+  const minSide = Math.min(image.width, image.height);
+  const sx = (image.width - minSide) / 2;
+  const sy = (image.height - minSide) / 2;
+
+  ctx.drawImage(image, sx, sy, minSide, minSide, 0, 0, size, size);
+  return canvas.toDataURL("image/jpeg", 0.9); // dữ liệu ảnh 1:1
+}
+
 </script>
 
 </body>
