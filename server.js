@@ -3,6 +3,8 @@ const multer  = require('multer');
 const fs = require('fs');
 const { google } = require('googleapis');
 const path = require('path');
+const serverless = require("serverless-http");
+
 
 // ==== Load environment variables ====
 // require('dotenv').config();
@@ -337,5 +339,5 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 // ✅ Xuất app ra cho Vercel
-const serverless = require("serverless-http");
-module.exports = serverless(app);
+module.exports = app;               // export app để test local
+module.exports.handler = serverless(app); 
