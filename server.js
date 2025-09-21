@@ -314,9 +314,8 @@ app.delete('/delete/:id', async (req, res) => {
 // app.use(express.static(__dirname));
 
 // ==== Listen all IP ====
-// app.listen(PORT, '0.0.0.0', () => {
-//   console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
-//   console.log(`📁 Google Drive API configured with CLIENT_ID: ${CLIENT_ID?.substring(0, 10)}...`);
-// });
+app.get('/', (req, res) => {
+  res.send('🚀 API Server đang chạy! Các endpoint: /files, /upload, /delete/:id ...');
+});
 // ✅ Xuất app ra cho Vercel
 module.exports = app;
