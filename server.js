@@ -337,4 +337,5 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 // ✅ Xuất app ra cho Vercel
-module.exports = app;
+const serverless = require("serverless-http");
+module.exports = serverless(app);
