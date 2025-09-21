@@ -223,6 +223,9 @@ app.post('/create-folder', async (req, res) => {
 });
 
 // ==== API: Upload file, nếu đã có thì cập nhật (ghi đè) ====
+const sharp = require("sharp");
+
+// ==== API: Upload file, nếu đã có thì cập nhật (ghi đè) ====
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     const rootId = await ensureUploadRoot();
@@ -238,13 +241,22 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     if (folderPath) {
       parentId = await getOrCreateFolderByPath(folderPath, parentId);
     }
+
+    // ✅ Xử lý ép vuông 1:1 bằng sharp trước khi upload
+    const squarePath = req.file.path + "_square.jpg";
+    await sharp(req.file.path)
+      .resize(800, 800, { fit: "cover" }) // ép về 800x800 (1:1)
+      .jpeg({ quality: 90 })
+      .toFile(squarePath);
+
     // Kiểm tra file cùng tên trong parent (ghi đè)
-    const fileName = req.file.originalname;
+    const fileName = req.file.originalname.replace(/\.[^/.]+$/, "") + "_square.jpg";
     const existed = await drive.files.list({
       q: `'${parentId}' in parents and name='${fileName.replace(/'/g, "\\'")}' and trashed=false`,
       fields: 'files(id)',
       spaces: 'drive'
     });
+
     let fileId = null;
     if (existed.data.files.length > 0) {
       fileId = existed.data.files[0].id;
@@ -252,8 +264,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       await drive.files.update({
         fileId,
         media: {
-          mimeType: req.file.mimetype,
-          body: fs.createReadStream(req.file.path)
+          mimeType: "image/jpeg",
+          body: fs.createReadStream(squarePath)
         }
       });
     } else {
@@ -263,8 +275,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         parents: [parentId]
       };
       const media = {
-        mimeType: req.file.mimetype,
-        body: fs.createReadStream(req.file.path)
+        mimeType: "image/jpeg",
+        body: fs.createReadStream(squarePath)
       };
       const driveRes = await drive.files.create({
         resource: fileMeta,
@@ -273,14 +285,20 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       });
       fileId = driveRes.data.id;
     }
+
+    // Xóa file tạm
     fs.unlink(req.file.path, () => {});
+    fs.unlink(squarePath, () => {});
+
     // Lấy link share
     const shareLink = await getOrCreateShareLink(fileId);
     res.json({ id: fileId, name: fileName, shareLink });
   } catch (err) {
+    console.error("❌ Upload error:", err);
     res.status(500).json({ error: 'Upload lỗi', detail: err.message });
   }
 });
+
 
 // ==== API: Download file ====
 app.get('/download/:id', async (req, res) => {
