@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Google Drive</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+  <link rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #202124;
+    }
+
+    /* Header */
+    .drive-header {
+      background: #fff;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 16px;
+      max-width: 100%;
+    }
+
+    /* Toolbar - Mobile Grid */
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .upload-label, .btn {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+      min-height: 48px;
+    }
+
+    .upload-label:hover, .btn:hover {
+      background: #1557b0;
+    }
+
+    .btn-create {
+      background: #34a853;
+    }
+
+    .btn-create:hover {
+      background: #2d8f47;
+    }
+
+    .btn-camera {
+      background: #ea4335;
+      grid-column: 1 / -1;
+    }
+
+    .btn-camera:hover {
+      background: #d23d29;
+    }
+
+    .upload-label input {
+      display: none;
+    }
+
+    /* Progress Bar */
+    .progress-wrap {
+      display: none;
+      background: #e8f0fe;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 12px;
+      grid-column: 1 / -1;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: #1a73e8;
+      border-radius: 2px;
+      transition: width 0.3s;
+      margin-bottom: 4px;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: #5f6368;
+    }
+
+    /* Storage Bar */
+    #storageBar {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .storage-bar-wrap {
+      margin-top: 8px;
+    }
+
+    .storage-bar-bg {
+      height: 6px;
+      background: #e0e0e0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .storage-bar-used {
+      height: 100%;
+      background: #1a73e8;
+      transition: width 0.3s;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .breadcrumbs span {
+      cursor: pointer;
+      color: #1a73e8;
+      flex-shrink: 0;
+    }
+
+    .breadcrumb-current {
+      color: #202124 !important;
+      font-weight: 500;
+    }
+
+    /* File List - Mobile Cards */
+    .file-list {
+      display: none;
+    }
+
+    .file-cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .file-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .file-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .file-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-name {
+      font-weight: 500;
+      font-size: 16px;
+      color: #202124;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .file-meta {
+      font-size: 12px;
+      color: #5f6368;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-action {
+      background: #f8f9fa;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #5f6368;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-action:hover {
+      background: #e8eaed;
+      color: #202124;
+    }
+
+    .btn-download {
+      color: #1a73e8;
+    }
+
+    .btn-delete {
+      color: #ea4335;
+    }
+
+    /* Links */
+    .folder-link, .file-link {
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .folder-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Empty State */
+    .empty-note {
+      text-align: center;
+      padding: 48px 24px;
+      color: #5f6368;
+      font-size: 16px;
+    }
+
+    /* Drop Area */
+    .drop-area {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(26, 115, 232, 0.1);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #1a73e8;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 24px;
+    }
+
+    .drop-area-show {
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1001;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #323232;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      min-width: 280px;
+      animation: slideIn 0.3s ease;
+      pointer-events: auto;
+    }
+
+    .toast-success {
+      background: #34a853;
+    }
+
+    .toast-error {
+      background: #ea4335;
+    }
+
+    .fade-out {
+      animation: fadeOut 0.3s ease;
+    }
+
+    /* Modal */
+    .modal-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1002;
+      padding: 24px;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .modal input:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+    }
+
+    .btn-cancel {
+      background: #f8f9fa;
+      color: #5f6368;
+    }
+
+    /* Camera Modal */
+    .camera-modal .modal {
+      max-width: 90vw;
+      max-height: 90vh;
+      padding: 16px;
+    }
+
+    .camera-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    #cameraVideo {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #000;
+    }
+
+    .camera-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.3);
+    }
+
+    .camera-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .btn-capture {
+      background: #ea4335;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 64px;
+      height: 64px;
+      font-size: 24px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-capture:active {
+      transform: scale(0.95);
+    }
+
+    .btn-flip {
+      background: #f8f9fa;
+      color: #5f6368;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* Photo Preview */
+    .photo-preview {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #previewImage {
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .preview-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Desktop adjustments */
+    @media (min-width: 768px) {
+      .toolbar {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+
+      .file-cards {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      }
+
+      .file-list {
+        display: table;
+        width: 100%;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      .file-cards {
+        display: none;
+      }
+
+      .file-list th,
+      .file-list td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .file-list th {
+        background: #f8f9fa;
+        font-weight: 500;
+        color: #5f6368;
+        font-size: 14px;
+      }
+
+      .file-list tbody tr:hover {
+        background: #f8f9fa;
+      }
+
+      .col-name {
+        width: 50%;
+      }
+
+      .col-time {
+        width: 25%;
+      }
+
+      .col-size {
+        width: 15%;
+      }
+
+      .col-action {
+        width: 10%;
+      }
+
+      .action-group {
+        display: flex;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="drive-header">
+    <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Drive" style="width:32px;height:32px;margin-right:13px;">
+    <span class="header-title">Mini Google Drive</span>
+  </div>
+  <div class="main-content">
+    <div class="toolbar">
+      <label class="upload-label upload-file" title="Tải lên tệp">
+        <span class="mdi mdi-upload"></span> Tải lên tệp
+        <input type="file" id="fileInput" multiple onchange="uploadFileList(this.files, currentFolderId)">
+      </label>
+      <label class="upload-label upload-folder" title="Tải lên thư mục">
+        <span class="mdi mdi-folder-upload"></span> Tải lên thư mục
+        <input type="file" id="folderInput" webkitdirectory directory multiple onchange="uploadFolder(this.files, currentFolderId)">
+      </label>
+      <button class="btn btn-create" onclick="promptCreateFolder()">
+        <span class="mdi mdi-folder-plus-outline"></span> Tạo thư mục
+      </button>
+      <button class="btn btn-camera" onclick="openCamera()">
+        <span class="mdi mdi-camera"></span> Chụp ảnh
+      </button>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+        <span class="progress-text" id="progressText"></span>
+      </div>
+    </div>
+    <div id="storageBar" style="margin-bottom: 16px;"></div>
+    <div class="breadcrumbs" id="breadcrumbs"></div>
+    <div class="drop-area" id="dropArea">
+      <div>
+        <div class="mdi mdi-cloud-upload" style="font-size: 48px; margin-bottom: 16px;"></div>
+        <div>Kéo & thả tệp/thư mục vào đây để tải lên...</div>
+      </div>
+    </div>
+    
+    <!-- Desktop Table View -->
+    <table class="file-list" id="fileTable">
+      <thead>
+        <tr>
+          <th class="col-name">Tên</th>
+          <th class="col-time">Ngày cập nhật</th>
+          <th class="col-size">Dung lượng</th>
+          <th class="col-action">Tác vụ</th>
+        </tr>
+      </thead>
+      <tbody id="fileListBody"></tbody>
+    </table>
+    
+    <!-- Mobile Card View -->
+    <div class="file-cards" id="fileCards"></div>
+    
+    <div class="empty-note" id="emptyNote" style="display: none;">
+      <div class="mdi mdi-folder-outline" style="font-size: 48px; margin-bottom: 16px; color: #dadce0;"></div>
+      Chưa có tệp hay thư mục nào
+    </div>
+  </div>
+  <div id="toast-container"></div>
+
+<script>
+// ==== Quota cá nhân tự định nghĩa ====
+const MY_QUOTA_GB = 0;
+
+// ==== Globals ====
+let currentFolderId = null;
+let breadcrumbs = [];
+let folderNameMap = {};
+let currentStream = null;
+let facingMode = 'environment'; // 'user' for front, 'environment' for back
+
+// ==== Toast popup ====
+function showToast(msg, type = 'info') {
+  const toastContainer = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="mdi ${type === 'success' ? 'mdi-check-circle-outline' : type === 'error' ? 'mdi-alert-circle-outline' : 'mdi-information-outline'}"></span> ${msg}`;
+  toastContainer.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    setTimeout(() => toast.remove(), 600);
+  }, 2300);
+}
+
+// ==== Storage info ====
+async function fetchStorage() {
+  try {
+    const res = await fetch('/storage');
+    const quota = await res.json();
+    const usedBytes = quota.usageInDrive ? Number(quota.usageInDrive) : 0;
+    let totalQuotaBytes = quota.limit ? Number(quota.limit) : 0;
+    let quotaGB = (typeof MY_QUOTA_GB !== "undefined" && MY_QUOTA_GB > 0)
+      ? MY_QUOTA_GB
+      : (totalQuotaBytes > 0 ? totalQuotaBytes / 1024 / 1024 / 1024 : 0);
+    let quotaText = quotaGB > 0
+      ? quotaGB.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : "Không giới hạn";
+    let percent = (quotaGB > 0)
+      ? ((usedBytes / (quotaGB * 1024 * 1024 * 1024)) * 100).toFixed(2)
+      : "";
+    const usedGB = toGB(usedBytes);
+
+    let percentStr = percent ? `(${percent}%)` : "";
+
+    const html = `
+      <b>Bộ nhớ Drive:</b> Đã dùng ${usedGB} GB / ${quotaText} GB ${percentStr}
+      <div class="storage-bar-wrap">
+        <div class="storage-bar-bg">
+          <div class="storage-bar-used" style="width:${percent || 1}%;"></div>
+        </div>
+      </div>
+    `;
+    document.getElementById('storageBar').innerHTML = html;
+  } catch (e) {
+    document.getElementById('storageBar').innerHTML = '<span style="color:red">Không lấy được thông tin dung lượng</span>';
+  }
+}
+
+function toGB(bytes) {
+  return (bytes / 1024 / 1024 / 1024).toLocaleString('vi-VN', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1)+' KB';
+  if (bytes < 1024*1024*1024) return (bytes/1024/1024).toFixed(1)+' MB';
+  return (bytes/1024/1024/1024).toFixed(2)+' GB';
+}
+
+// ==== Breadcrumbs ====
+function renderBreadcrumbs() {
+  const bc = document.getElementById('breadcrumbs');
+  if (!breadcrumbs.length) return;
+  bc.innerHTML = '';
+  breadcrumbs.forEach((b, i) => {
+    if (i > 0) bc.innerHTML += `<span class="mdi mdi-chevron-right"></span>`;
+    if (i === breadcrumbs.length - 1) {
+      bc.innerHTML += `<span class="breadcrumb-current">${b.name}</span>`;
+    } else {
+      bc.innerHTML += `<span onclick="openFolderByBreadcrumb(${i})">${b.name}</span>`;
+    }
+  });
+}
+
+function openFolderByBreadcrumb(idx) {
+  const target = breadcrumbs[idx];
+  breadcrumbs = breadcrumbs.slice(0, idx + 1);
+  openFolder(target.id, false);
+}
+
+// ==== File icons ====
+function getFileTypeIcon(file) {
+  if (file.isFolder) return '<span class="mdi mdi-folder file-icon" style="color:#ffb300"></span>';
+  const ext = (file.name || '').split('.').pop().toLowerCase();
+  switch (ext) {
+    case 'xml': return '<span class="mdi mdi-xml file-icon" style="color:#7d63e0"></span>';
+    case 'py': return '<span class="mdi mdi-language-python file-icon" style="color:#306998"></span>';
+    case 'php': return '<span class="mdi mdi-language-php file-icon" style="color:#6e4fbb"></span>';
+    case 'json': return '<span class="mdi mdi-code-json file-icon" style="color:#01a98e"></span>';
+    case 'exe': return '<span class="mdi mdi-cog file-icon" style="color:#455a64"></span>';
+    case 'apk': return '<span class="mdi mdi-android file-icon" style="color:#43b755"></span>';
+    case 'cs': return '<span class="mdi mdi-language-csharp file-icon" style="color:#512bd4"></span>';
+    case 'js': return '<span class="mdi mdi-language-javascript file-icon" style="color:#efd81d"></span>';
+    case 'html': return '<span class="mdi mdi-language-html5 file-icon" style="color:#e34c26"></span>';
+    case 'css': return '<span class="mdi mdi-language-css3 file-icon" style="color:#2965f1"></span>';
+    case 'zip': case 'rar': return '<span class="mdi mdi-folder-zip file-icon" style="color:#607d8b"></span>';
+    case 'txt': return '<span class="mdi mdi-file-document-outline file-icon" style="color:#222"></span>';
+    case 'pdf': return '<span class="mdi mdi-file-pdf-box file-icon" style="color:#ea4335"></span>';
+    case 'doc': case 'docx': return '<span class="mdi mdi-file-word-box file-icon" style="color:#4285f4"></span>';
+    case 'xls': case 'xlsx': return '<span class="mdi mdi-file-excel-box file-icon" style="color:#34a853"></span>';
+    case 'png': case 'jpg': case 'jpeg': case 'gif': case 'bmp': return '<span class="mdi mdi-file-image file-icon" style="color:#fbc02d"></span>';
+    case 'mp3': case 'wav': return '<span class="mdi mdi-file-music file-icon" style="color:#9c27b0"></span>';
+    case 'mp4': case 'mov': return '<span class="mdi mdi-file-video file-icon" style="color:#00acc1"></span>';
+    default: return '<span class="mdi mdi-file-outline file-icon" style="color:#636c72"></span>';
+  }
+}
+
+// ==== Render file rows ====
+function renderFileRow(f) {
+  return `
+    <tr>
+      <td class="col-name">
+        ${getFileTypeIcon(f)}
+        ${f.isFolder
+          ? `<span class="folder-link" onclick="openFolder('${f.id}')">${f.name}</span>`
+          : (f.shareLink
+              ? `<a class="file-link" href="${f.shareLink}" target="_blank" rel="noopener">${f.name}</a>`
+              : `<span class="file-link">${f.name}</span>`
+            )
+        }
+      </td>
+      <td class="col-time">${f.modifiedTime ? new Date(f.modifiedTime).toLocaleString() : ''}</td>
+      <td class="col-size">${f.size ? formatSize(f.size) : ''}</td>
+      <td>
+        <div class="action-group">
+        ${!f.isFolder ? `
+          <a class="btn-action btn-download mdi mdi-download" title="Tải về" href="/download/${f.id}" download></a>
+        ` : ''}
+          <button class="btn-action btn-delete mdi mdi-delete" title="Xóa" onclick="deleteFile('${f.id}', ${f.isFolder})"></button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function renderFileCard(f) {
+  const modifiedTime = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString('vi-VN') : '';
+  const size = f.size ? formatSize(f.size) : '';
+  
+  return `
+    <div class="file-card">
+      ${getFileTypeIcon(f)}
+      <div class="file-info">
+        <div class="file-name">
+          ${f.isFolder
+            ? `<span class="folder-link" onclick="openFolder('${f.id}')">${f.name}</span>`
+            : (f.shareLink
+                ? `<a class="file-link" href="${f.shareLink}" target="_blank" rel="noopener">${f.name}</a>`
+                : `<span>${f.name}</span>`
+              )
+          }
+        </div>
+        <div class="file-meta">
+          ${modifiedTime ? `<span>${modifiedTime}</span>` : ''}
+          ${size ? `<span>${size}</span>` : ''}
+        </div>
+      </div>
+      <div class="file-actions">
+        ${!f.isFolder ? `
+          <a class="btn-action btn-download mdi mdi-download" title="Tải về" href="/download/${f.id}" download></a>
+        ` : ''}
+        <button class="btn-action btn-delete mdi mdi-delete" title="Xóa" onclick="deleteFile('${f.id}', ${f.isFolder})"></button>
+      </div>
+    </div>
+  `;
+}
+
+// ==== Fetch & display files ====
+async function fetchFiles(folderId) {
+  const url = folderId ? `/files?parentId=${encodeURIComponent(folderId)}` : '/files';
+  const res = await fetch(url);
+  const files = await res.json();
+  const tbody = document.getElementById('fileListBody');
+  const fileCards = document.getElementById('fileCards');
+  const emptyNote = document.getElementById('emptyNote');
+  
+  tbody.innerHTML = '';
+  fileCards.innerHTML = '';
+  
+  if (!files.length) {
+    emptyNote.style.display = 'block';
+    return;
+  }
+  
+  emptyNote.style.display = 'none';
+  files.sort((a,b) => {
+    if (a.isFolder && !b.isFolder) return -1;
+    if (!a.isFolder && b.isFolder) return 1;
+    return a.name.localeCompare(b.name, 'vi');
+  });
+  
+  // Render for both table and cards
+  tbody.innerHTML = files.map(renderFileRow).join('');
+  fileCards.innerHTML = files.map(renderFileCard).join('');
+}
+
+// ==== Folder operations ====
+async function openFolder(folderId, pushBread = true) {
+  currentFolderId = folderId;
+  await fetchFiles(folderId);
+  if (pushBread) {
+    let name = 'Tệp của bạn';
+    if (folderId && folderNameMap[folderId]) name = folderNameMap[folderId];
+    else if (folderId) {
+      try {
+        const res = await fetch('/folderinfo/' + folderId);
+        const info = await res.json();
+        name = info.name || 'Thư mục';
+        folderNameMap[folderId] = name;
+      } catch { }
+    }
+    breadcrumbs.push({ id: folderId, name });
+  }
+  renderBreadcrumbs();
+  fetchStorage();
+}
+
+// ==== Create folder ====
+function promptCreateFolder() {
+  if (!document.getElementById('modalCreateFolder')) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-bg';
+    modal.id = 'modalCreateFolder';
+    modal.innerHTML = `
+      <div class="modal">
+        <div class="modal-title"><span class="mdi mdi-folder-plus-outline"></span> Tạo thư mục mới</div>
+        <input id="newFolderName" type="text" placeholder="Tên thư mục...">
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="submitCreateFolder()">Tạo</button>
+          <button class="btn btn-cancel" onclick="closeModalCreateFolder()">Hủy</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  document.getElementById('newFolderName').value = "";
+  document.getElementById('modalCreateFolder').style.display = 'flex';
+  setTimeout(() => document.getElementById('newFolderName').focus(), 100);
+}
+
+function closeModalCreateFolder() {
+  document.getElementById('modalCreateFolder').style.display = 'none';
+}
+
+async function submitCreateFolder() {
+  let name = document.getElementById('newFolderName').value.trim();
+  if (!name) {
+    showToast('Vui lòng nhập tên thư mục!', 'error');
+    return;
+  }
+  closeModalCreateFolder();
+  showToast('Đang tạo thư mục...', 'info');
+  const res = await fetch('/create-folder', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name, parentId: currentFolderId })
+  });
+  await fetchFiles(currentFolderId);
+  showToast('Đã tạo thư mục!', 'success');
+}
+
+// ==== Camera functionality ====
+async function openCamera() {
+  // Create camera modal
+  if (!document.getElementById('modalCamera')) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-bg camera-modal';
+    modal.id = 'modalCamera';
+    modal.innerHTML = `
+      <div class="modal">
+        <div class="modal-title"><span class="mdi mdi-camera"></span> Chụp ảnh</div>
+        
+        <div class="camera-view" id="cameraView">
+          <div class="camera-container">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <div class="camera-overlay"></div>
+          </div>
+          <div class="camera-controls">
+            <button class="btn-flip mdi mdi-camera-flip" onclick="flipCamera()" title="Đổi camera"></button>
+            <button class="btn-capture mdi mdi-camera" onclick="capturePhoto()" title="Chụp ảnh"></button>
+            <button class="btn-flip mdi mdi-close" onclick="closeCamera()" title="Đóng"></button>
+          </div>
+        </div>
+
+        <div class="photo-preview" id="photoPreview">
+          <img id="previewImage" alt="Preview">
+          <div class="preview-actions">
+            <button class="btn btn-primary" onclick="uploadPhoto()">
+              <span class="mdi mdi-upload"></span> Tải lên
+            </button>
+            <button class="btn btn-cancel" onclick="retakePhoto()">
+              <span class="mdi mdi-camera-retake"></span> Chụp lại
+            </button>
+            <button class="btn btn-cancel" onclick="closeCamera()">
+              <span class="mdi mdi-close"></span> Hủy
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  // Show modal and start camera
+  document.getElementById('modalCamera').style.display = 'flex';
+  document.getElementById('cameraView').style.display = 'block';
+  document.getElementById('photoPreview').style.display = 'none';
+  
+  await startCamera();
+}
+
+async function startCamera() {
+  try {
+    // Stop existing stream
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+    }
+
+    // Check if getUserMedia is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('Camera not supported');
+    }
+
+    // Get camera stream with fallback constraints
+    let constraints = {
+      video: {
+        facingMode: facingMode,
+        width: { ideal: 1080 },
+        height: { ideal: 1080 },
+        aspectRatio: 1
+      },
+      audio: false
+    };
+
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (error) {
+      // Fallback: try without specific constraints
+      console.warn('Failed with specific constraints, trying basic camera access');
+      constraints = {
+        video: { facingMode: facingMode },
+        audio: false
+      };
+      currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    const video = document.getElementById('cameraVideo');
+    video.srcObject = currentStream;
+    
+    // Wait for video to load
+    video.addEventListener('loadedmetadata', () => {
+      video.play().catch(error => {
+        console.error('Error playing video:', error);
+        showToast('Lỗi khởi động camera!', 'error');
+      });
+    });
+
+  } catch (error) {
+    console.error('Error accessing camera:', error);
+    let errorMessage = 'Không thể truy cập camera!';
+    
+    if (error.name === 'NotAllowedError') {
+      errorMessage = 'Vui lòng cho phép truy cập camera!';
+    } else if (error.name === 'NotFoundError') {
+      errorMessage = 'Không tìm thấy camera!';
+    } else if (error.name === 'NotSupportedError') {
+      errorMessage = 'Trình duyệt không hỗ trợ camera!';
+    }
+    
+    showToast(errorMessage, 'error');
+  }
+}
+
+function flipCamera() {
+  facingMode = facingMode === 'user' ? 'environment' : 'user';
+  startCamera();
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraVideo');
+  
+  // Check if video is ready
+  if (!video.videoWidth || !video.videoHeight) {
+    showToast('Camera chưa sẵn sàng, vui lòng thử lại!', 'error');
+    return;
+  }
+
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size to square (1:1 aspect ratio)
+    const size = Math.min(video.videoWidth, video.videoHeight);
+    canvas.width = size;
+    canvas.height = size;
+
+    // Calculate crop position to center the image
+    const sourceX = (video.videoWidth - size) / 2;
+    const sourceY = (video.videoHeight - size) / 2;
+
+    // Draw cropped image to canvas
+    ctx.drawImage(video, sourceX, sourceY, size, size, 0, 0, size, size);
+
+    // Convert canvas to data URL first, then to blob
+    const dataURL = canvas.toDataURL('image/jpeg', 0.9);
+    
+    // Convert data URL to blob manually
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    const blob = new Blob([u8arr], { type: mime });
+    
+    console.log('Created blob:', blob);
+    console.log('Blob type:', typeof blob);
+    console.log('Is Blob instance:', blob instanceof Blob);
+    console.log('Blob size:', blob.size);
+    
+    if (!blob || blob.size === 0) {
+      console.error('Invalid blob created');
+      showToast('Không thể tạo ảnh, vui lòng thử lại!', 'error');
+      return;
+    }
+    
+    try {
+      const url = URL.createObjectURL(blob);
+      document.getElementById('previewImage').src = url;
+      document.getElementById('cameraView').style.display = 'none';
+      document.getElementById('photoPreview').style.display = 'flex';
+      
+      // Store the blob for upload
+      window.capturedPhoto = blob;
+      window.capturedPhotoUrl = url;
+      
+      console.log('Photo captured successfully');
+    } catch (error) {
+      console.error('Error creating object URL:', error);
+      showToast('Lỗi xử lý ảnh!', 'error');
+    }
+    
+  } catch (error) {
+    console.error('Error in capturePhoto:', error);
+    showToast('Lỗi chụp ảnh!', 'error');
+  }
+}
+
+function retakePhoto() {
+  document.getElementById('cameraView').style.display = 'block';
+  document.getElementById('photoPreview').style.display = 'none';
+  
+  // Clean up previous photo
+  cleanupCapturedPhoto();
+}
+
+async function uploadPhoto() {
+  console.log('uploadPhoto called');
+  console.log('capturedPhoto:', window.capturedPhoto);
+  
+  if (!window.capturedPhoto) {
+    showToast('Không có ảnh để tải lên!', 'error');
+    return;
+  }
+  
+  console.log('capturedPhoto type:', typeof window.capturedPhoto);
+  console.log('capturedPhoto instanceof Blob:', window.capturedPhoto instanceof Blob);
+  
+  if (!(window.capturedPhoto instanceof Blob)) {
+    console.error('capturedPhoto is not a Blob:', window.capturedPhoto);
+    showToast('Ảnh không hợp lệ!', 'error');
+    return;
+  }
+  
+  if (window.capturedPhoto.size === 0) {
+    console.error('capturedPhoto is empty blob');
+    showToast('Ảnh trống, vui lòng chụp lại!', 'error');
+    return;
+  }
+
+  // Store blob reference before closing camera
+  const photoBlob = window.capturedPhoto;
+  const photoUrl = window.capturedPhotoUrl;
+
+  try {
+    // Create FormData with the photo
+    const formData = new FormData();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `photo-${timestamp}.jpg`;
+    
+    console.log('About to append blob to FormData');
+    console.log('Filename:', filename);
+    console.log('Blob size:', photoBlob.size);
+    
+    // Test if FormData.append works with this blob
+    try {
+      formData.append('file', photoBlob, filename);
+      console.log('Successfully appended blob to FormData');
+    } catch (appendError) {
+      console.error('Error appending to FormData:', appendError);
+      
+      // Fallback: create a new blob from the existing one
+      const newBlob = new Blob([photoBlob], { type: 'image/jpeg' });
+      console.log('Created new blob:', newBlob);
+      formData.append('file', newBlob, filename);
+    }
+    
+    if (currentFolderId) formData.append('parentId', currentFolderId);
+
+    // Close camera after FormData is ready
+    closeCamera();
+
+    // Upload with progress
+    await uploadWithProgress(formData, filename, 0, 1);
+    await fetchFiles(currentFolderId);
+    
+    showToast('Đã tải lên ảnh thành công!', 'success');
+    
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+    showToast('Lỗi tải lên ảnh: ' + error.message, 'error');
+    
+    // Cleanup on error
+    if (photoUrl) {
+      try {
+        URL.revokeObjectURL(photoUrl);
+      } catch (e) {
+        console.warn('Error revoking URL:', e);
+      }
+    }
+  }
+}
+
+function closeCamera() {
+  const modal = document.getElementById('modalCamera');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  
+  // Stop camera stream
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+  
+  // Only cleanup if not uploading
+  // uploadPhoto() will handle cleanup after upload
+}
+
+// ==== Upload functions ====
+function uploadFileList(fileList, folderId) {
+  if (!fileList || !fileList.length) return;
+  uploadFiles(Array.from(fileList), folderId);
+}
+
+async function uploadFiles(files, folderId, basePath='') {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const formData = new FormData();
+    formData.append('file', file);
+    if (file.webkitRelativePath) {
+      formData.append('relativePath', file.webkitRelativePath);
+    } else if (basePath) {
+      formData.append('relativePath', basePath + file.name);
+    }
+    if (folderId) formData.append('parentId', folderId);
+
+    await uploadWithProgress(formData, file.name, i, files.length);
+    await fetchFiles(currentFolderId);
+  }
+}
+
+function uploadFolder(fileList, folderId) {
+  uploadFiles(Array.from(fileList), folderId);
+}
+
+// ==== Drag & Drop ====
+function setupDragDrop() {
+  const dropArea = document.getElementById('dropArea');
+  let dragTimeout = null;
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    window.addEventListener(eventName, e => {
+      e.preventDefault(); e.stopPropagation();
+      clearTimeout(dragTimeout);
+      dropArea.style.display = 'flex';
+      dropArea.classList.add('drop-area-show');
+    });
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    window.addEventListener(eventName, e => {
+      e.preventDefault(); e.stopPropagation();
+      dragTimeout = setTimeout(() => {
+        dropArea.classList.remove('drop-area-show');
+        dropArea.style.display = 'none';
+      }, 120);
+    });
+  });
+  
+  dropArea.addEventListener('drop', e => {
+    e.preventDefault();
+    dropArea.style.display = 'none';
+    dropArea.classList.remove('drop-area-show');
+    let items = e.dataTransfer.items;
+    let files = [];
+    if (items && items.length > 0) {
+      let hasDir = false;
+      for (let i = 0; i < items.length; i++) {
+        let entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
+        if (entry && entry.isDirectory) hasDir = true;
+      }
+      if (hasDir) {
+        let entry = items[0].webkitGetAsEntry && items[0].webkitGetAsEntry();
+        showToast('Đang xử lý thư mục...', 'info');
+        fetch('/create-folder', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({name: entry.name, parentId: currentFolderId})
+        })
+        .then(res => res.json())
+        .then(newFolder => {
+          let folderFiles = [];
+          getAllFilesFromEntry(entry, '', folderFiles, () => {
+            folderFiles.forEach(file => {
+              file.webkitRelativePath = entry.name + '/' + file.webkitRelativePath;
+            });
+            uploadFiles(folderFiles, newFolder.id);
+          });
+        });
+      } else {
+        let total = items.length;
+        let collected = 0;
+        for (let i = 0; i < items.length; i++) {
+          let entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
+          if (entry && entry.isFile) {
+            entry.file(file => {
+              files.push(file);
+              collected++;
+              if (collected === total) {
+                showToast('Đang xử lý tệp...', 'info');
+                uploadFiles(files, currentFolderId);
+              }
+            });
+          } else if (items[i].getAsFile) {
+            files.push(items[i].getAsFile());
+            collected++;
+            if (collected === total) {
+              showToast('Đang xử lý tệp...', 'info');
+              uploadFiles(files, currentFolderId);
+            }
+          }
+        }
+      }
+    } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      showToast('Đang xử lý tệp...', 'info');
+      uploadFiles(Array.from(e.dataTransfer.files), currentFolderId);
+    }
+  });
+}
+
+function getAllFilesFromEntry(entry, path, files, cb) {
+  if (entry.isFile) {
+    entry.file(file => {
+      file.webkitRelativePath = path + entry.name;
+      files.push(file);
+      cb && cb();
+    });
+  } else if (entry.isDirectory) {
+    const dirReader = entry.createReader();
+    dirReader.readEntries(entries => {
+      let i = 0;
+      function next() {
+        if (i < entries.length) {
+          getAllFilesFromEntry(entries[i], path + entry.name + '/', files, next);
+          i++;
+        } else {
+          cb && cb();
+        }
+      }
+      next();
+    });
+  }
+}
+
+// ==== Progress & Upload ====
+function uploadWithProgress(formData, fileName, index, total) {
+  return new Promise((resolve, reject) => {
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    progressWrap.style.display = 'flex';
+    progressBar.style.width = '0%';
+    progressText.textContent = `Đang tải lên: ${fileName} (${index+1}/${total})`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/upload', true);
+
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) {
+        const percent = Math.round(e.loaded * 100 / e.total);
+        progressBar.style.width = percent + '%';
+        progressText.textContent = `${percent}% - ${fileName} (${index+1}/${total})`;
+      }
+    };
+    
+    xhr.onload = function() {
+      progressWrap.style.display = 'none';
+      if (xhr.status === 200) showToast('Tải lên thành công!', 'success');
+      else showToast('Tải lên thất bại!', 'error');
+      resolve();
+    };
+    
+    xhr.onerror = function() {
+      progressWrap.style.display = 'none';
+      showToast('Lỗi upload!', 'error');
+      reject();
+    };
+    
+    xhr.send(formData);
+  });
+}
+
+// ==== Confirmation & Delete ====
+function showConfirm(msg, onOk, onCancel) {
+  let old = document.getElementById('modalConfirm');
+  if (old) old.remove();
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal-bg';
+  modal.id = 'modalConfirm';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-title"><span class="mdi mdi-alert-outline"></span> Xác nhận</div>
+      <div style="margin: 16px 0 13px 0; font-size:16.2px; color:#212529;">${msg}</div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnOk">Đồng ý</button>
+        <button class="btn btn-cancel" id="btnCancel">Hủy</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setTimeout(() => { document.getElementById('btnOk').focus(); }, 70);
+  
+  document.getElementById('btnOk').onclick = function() {
+    modal.remove();
+    if (onOk) onOk();
+  };
+  
+  document.getElementById('btnCancel').onclick = function() {
+    modal.remove();
+    if (onCancel) onCancel();
+  };
+}
+
+async function deleteFile(id, isFolder = false) {
+  showConfirm(
+    `Bạn chắc chắn muốn xóa ${isFolder ? 'thư mục' : 'file'} này?`,
+    async () => {
+      try {
+        const res = await fetch('/delete/' + id, { method: 'DELETE' });
+        if (res.ok) {
+          await fetchFiles(currentFolderId);
+          fetchStorage();
+          showToast((isFolder ? 'Đã xóa thư mục!' : 'Đã xóa file!'), 'success');
+        } else {
+          showToast('Xóa thất bại!', 'error');
+        }
+      } catch {
+        showToast('Lỗi xóa file/thư mục!', 'error');
+      }
+    },
+    () => showToast('Đã hủy thao tác xóa.', 'info')
+  );
+}
+
+// ==== Cleanup helper function ====
+function cleanupCapturedPhoto() {
+  if (window.capturedPhotoUrl) {
+    try {
+      URL.revokeObjectURL(window.capturedPhotoUrl);
+    } catch (error) {
+      console.warn('Error revoking URL:', error);
+    }
+    window.capturedPhotoUrl = null;
+  }
+  window.capturedPhoto = null;
+}
+
+// ==== Initialize ====
+window.onload = function() {
+  breadcrumbs = [{ id: null, name: 'Tệp của bạn' }];
+  setupDragDrop();
+  openFolder(null, false);
+  renderBreadcrumbs();
+  fetchStorage();
+  
+  // Initialize camera globals
+  window.capturedPhoto = null;
+  window.capturedPhotoUrl = null;
+  
+  // Handle keyboard events for modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      // Close any open modals
+      const modals = document.querySelectorAll('.modal-bg');
+      modals.forEach(modal => {
+        if (modal.style.display === 'flex') {
+          if (modal.id === 'modalCamera') {
+            // For camera modal, cleanup and close
+            cleanupCapturedPhoto();
+            closeCamera();
+          } else {
+            modal.style.display = 'none';
+          }
+        }
+      });
+    }
+  });
+};
+</script>
+
+</body>
+</html>

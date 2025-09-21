@@ -1,0 +1,12 @@
+# Bỏ qua thư mục node_modules
+node_modules/
+
+# Bỏ qua file .env
+.env
+
+# Bỏ qua log files
+*.log
+
+# Bỏ qua build
+dist/
+build/
