@@ -1053,34 +1053,41 @@ async function directUploadToGoogleDrive(file, parentId = null, relativePath = '
 }
 
 // ==== Upload file với progress tracking ====
-async function uploadFileWithProgress(uploadUrl, file, uploadId) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable) {
-        const progress = 15 + Math.round((e.loaded / e.total) * 75); // 15-90%
-        updateUploadProgress(uploadId, progress, `${Math.round(e.loaded/e.total*100)}%`);
-      }
-    });
-    
-    xhr.addEventListener('load', () => {
-      if (xhr.status === 200 || xhr.status === 201) {
-        resolve(JSON.parse(xhr.responseText));
-      } else {
-        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
-      }
-    });
-    
-    xhr.addEventListener('error', () => {
-      reject(new Error('Network error during upload'));
-    });
-    
-    xhr.open('PUT', uploadUrl);
-    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-    xhr.send(file);
-  });
+async function uploadFileWithProgress(file, folderId = null) {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (folderId) formData.append("parentId", folderId);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/upload", true);
+
+  xhr.upload.onprogress = function (event) {
+    if (event.lengthComputable) {
+      const percentComplete = Math.round((event.loaded / event.total) * 100);
+      updateUploadProgress(file, percentComplete);
+    }
+  };
+
+  xhr.onload = async function () {
+    if (xhr.status === 200) {
+      updateUploadProgress(file, 100);
+      showToast(`Tải lên thành công: ${file.name}`, "success");
+
+      // 👉 Gọi load lại danh sách sau khi upload thành công
+      await loadFileList(currentFolderId);
+
+    } else {
+      showToast(`Lỗi tải lên: ${file.name}`, "error");
+    }
+  };
+
+  xhr.onerror = function () {
+    showToast(`Lỗi kết nối khi tải lên: ${file.name}`, "error");
+  };
+
+  xhr.send(formData);
 }
+
 
 // ==== Lấy file info từ upload URL ====
 async function getFileInfoFromUploadUrl(uploadUrl) {
@@ -1573,6 +1580,78 @@ async function deleteFile(id, isFolder = false) {
     () => showToast('Đã hủy thao tác xóa.', 'info')
   );
 }
+// Hàm load danh sách file từ server
+async function loadFileList(folderId = null) {
+  try {
+    const res = await fetch('/files' + (folderId ? `?parentId=${folderId}` : ''));
+    const files = await res.json();
+
+    const fileListBody = document.getElementById('fileListBody');
+    const mobileFileList = document.getElementById('mobileFileList');
+    const emptyNote = document.getElementById('emptyNote');
+
+    fileListBody.innerHTML = '';
+    mobileFileList.innerHTML = '';
+
+    if (!files.length) {
+      emptyNote.style.display = 'block';
+      return;
+    }
+    emptyNote.style.display = 'none';
+
+    files.forEach(file => {
+      // --- Desktop ---
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <span class="mdi ${file.isFolder ? 'mdi-folder' : 'mdi-file'} file-icon"></span>
+          <a href="${file.webViewLink}" target="_blank" class="file-link">${file.name}</a>
+        </td>
+        <td>${new Date(file.modifiedTime).toLocaleString()}</td>
+        <td>${file.isFolder ? '-' : formatFileSize(file.size)}</td>
+        <td class="action-group">
+          <button class="btn-action btn-download" onclick="window.open('${file.shareLink}')">
+            <span class="mdi mdi-download"></span>
+          </button>
+        </td>`;
+      fileListBody.appendChild(tr);
+
+      // --- Mobile ---
+      const div = document.createElement('div');
+      div.className = 'mobile-file-item';
+      div.innerHTML = `
+        <div class="mobile-file-header">
+          <span class="mdi ${file.isFolder ? 'mdi-folder' : 'mdi-file'} file-icon"></span>
+          <span class="mobile-file-name">${file.name}</span>
+          <div class="mobile-file-actions">
+            <button class="btn-action btn-download" onclick="window.open('${file.shareLink}')">
+              <span class="mdi mdi-download"></span>
+            </button>
+          </div>
+        </div>
+        <div class="mobile-file-meta">
+          <span>${new Date(file.modifiedTime).toLocaleString()}</span>
+          <span>${file.isFolder ? '-' : formatFileSize(file.size)}</span>
+        </div>`;
+      mobileFileList.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Lỗi load file list:', err);
+    showToast('Không tải được danh sách file', 'error');
+  }
+}
+
+// Helper định dạng dung lượng
+function formatFileSize(size) {
+  if (!size) return '0 B';
+  const units = ['B','KB','MB','GB'];
+  let i = 0;
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024; i++;
+  }
+  return size.toFixed(1) + ' ' + units[i];
+}
+
 
 // ==== Initialize ====
 window.onload = function() {
