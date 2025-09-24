@@ -340,52 +340,83 @@ body {
 }
 
 /* Mobile File List */
+/* Container cho danh sách mobile */
 .mobile-file-list {
-  display: none;
+  display: none;              /* Ẩn mặc định, bật qua media query */
+  padding: 12px;
+  background: #f8f9fa;
 }
 
+/* Item cơ bản */
 .mobile-file-item {
-  background: white;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* Khi nhấn */
 .mobile-file-item:active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transform: scale(0.97);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
 }
 
+/* Header: icon + tên */
 .mobile-file-header {
   display: flex;
   align-items: center;
+  margin-bottom: 6px;
+}
+
+.mobile-file-header .mdi {
+  font-size: 22px;
+  margin-right: 10px;
+  color: #4a5568; /* xám đậm */
+}
+
+/* Tên file */
+.mobile-file-name {
+  font-weight: 600;
+  font-size: 15px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Meta (loại file, dung lượng...) */
+.mobile-file-meta {
+  font-size: 12.5px;
+  color: #6c757d;
   margin-bottom: 8px;
 }
 
-.mobile-file-name {
-  flex: 1;
-  margin-left: 8px;
-  font-weight: 500;
-  word-break: break-word;
-}
-
+/* Actions: các nút nhỏ gọn */
 .mobile-file-actions {
   display: flex;
-  gap: 4px;
-  margin-left: 8px;
+  gap: 10px;
 }
 
-.mobile-file-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #5f6368;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #f1f3f4;
+.mobile-file-actions .btn-icon {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
+
+.mobile-file-actions .btn-icon:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.mobile-file-actions .mdi {
+  font-size: 20px;
+  color: #495057;
+}
+
 
 .empty-note {
   text-align: center;
@@ -1325,7 +1356,7 @@ function renderFileRow(f) {
 
 // ==== Fetch & display files ====
 async function fetchFiles(folderId) {
-  const url = folderId ? `/files?parentId=${encodeURIComponent(folderId)}` : '/files';
+  const url = folderId ? `/files?parentId=${encodeURIComponent(folderId)}` : 'https://mini-upload.vercel.app/files';
   const res = await fetch(url);
   const files = await res.json();
   const tbody = document.getElementById('fileListBody');
