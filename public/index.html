@@ -1331,6 +1331,7 @@ async function fetchFiles(folderId) {
   const tbody = document.getElementById('fileListBody');
   const emptyNote = document.getElementById('emptyNote');
   const mobileList = document.getElementById('mobileFileList'); // 👈 Thêm dòng này
+  if (mobileList) mobileList.innerHTML = files.map(renderMobileFileRow).join('');
   
   tbody.innerHTML = '';
   if (!files.length) {
@@ -1578,6 +1579,58 @@ async function deleteFile(id, isFolder = false) {
     () => showToast('Đã hủy thao tác xóa.', 'info')
   );
 }
+// helper: tránh XSS khi chèn vào innerHTML
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatBytes(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  const units = ['B','KB','MB','GB','TB'];
+  let i = 0;
+  let val = Number(bytes);
+  while (val >= 1024 && i < units.length-1) { val /= 1024; i++; }
+  return `${Math.round(val*10)/10} ${units[i]}`;
+}
+
+// render function cho mobile — trả về 1 chuỗi HTML cho mỗi file
+// (gắn vào window để chắc chắn có thể gọi từ nơi khác nếu bạn dùng <script type="module">)
+window.renderMobileFileRow = function(file) {
+  const id = String(file.id || '');
+  const safeName = escapeHtml(file.name || 'Không tên');
+  const iconClass = file.isFolder
+    ? 'mdi-folder'
+    : (file.mimeType && file.mimeType.startsWith('image/') ? 'mdi-file-image' : 'mdi-file-outline');
+  const meta = file.isFolder ? 'Thư mục' : ((file.mimeType || '') + (file.size ? ' · ' + formatBytes(file.size) : ''));
+  // cố gắng tìm url để mở file; nếu không có thì fallback sang /download/:id
+  const href = file.webViewLink || file.viewUrl || file.downloadUrl || (`/download/${encodeURIComponent(id)}`);
+
+  return `
+    <div class="mobile-file-row" data-id="${escapeHtml(id)}" data-isfolder="${file.isFolder ? '1' : '0'}">
+      <div class="mobile-left">
+        <span class="mdi ${iconClass}" aria-hidden="true"></span>
+      </div>
+      <div class="mobile-body">
+        <div class="mobile-name">${safeName}</div>
+        <div class="mobile-meta">${escapeHtml(meta)}</div>
+      </div>
+      <div class="mobile-actions">
+        ${file.isFolder
+          ? `<button class="btn-icon" onclick="openFolder('${escapeHtml(id)}')"><span class="mdi mdi-folder-open"></span></button>`
+          : `<a class="btn-icon" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"><span class="mdi mdi-open-in-new"></span></a>`}
+        <button class="btn-icon" onclick="deleteFile('${escapeHtml(id)}', ${file.isFolder ? 'true' : 'false'})" title="Xóa">
+          <span class="mdi mdi-trash-can-outline"></span>
+        </button>
+      </div>
+    </div>
+  `;
+};
+
 
 // ==== Initialize ====
 window.onload = function() {
