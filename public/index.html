@@ -2,14 +2,20 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Google Drive - Direct Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Google Drive - Mobile Optimized</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
   <style>
-/* CSS từ file cũ + một số cải tiến */
+/* Base styles và desktop */
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   background: #f8f9fa;
+  font-size: 14px;
 }
 
 .drive-header {
@@ -19,12 +25,18 @@ body {
   display: flex;
   align-items: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .header-title {
   font-size: 22px;
   font-weight: 400;
   color: #202124;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .main-content {
@@ -33,6 +45,95 @@ body {
   padding: 24px;
 }
 
+/* Upload Progress Bar - Improved */
+.upload-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 12px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-out;
+}
+
+.upload-progress-container.show {
+  transform: translateY(0);
+}
+
+.upload-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.upload-progress-title {
+  font-weight: 500;
+  color: #1a73e8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-progress-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #5f6368;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.upload-progress-close:hover {
+  background: #f1f3f4;
+}
+
+.upload-progress-bar {
+  height: 6px;
+  background: #e8eaed;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1a73e8, #4285f4);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.upload-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.upload-progress-text {
+  text-align: center;
+  font-size: 12px;
+  color: #5f6368;
+  margin-top: 4px;
+}
+
+/* Toolbar styles */
 .toolbar {
   display: flex;
   align-items: center;
@@ -51,6 +152,7 @@ body {
   border: none;
   text-decoration: none;
   transition: all 0.2s;
+  gap: 6px;
 }
 
 .upload-label {
@@ -73,32 +175,6 @@ body {
 
 .btn-create:hover {
   background: #2d8f47;
-}
-
-.progress-wrap {
-  display: none;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #dadce0;
-  border-radius: 6px;
-  padding: 8px 12px;
-  min-width: 300px;
-}
-
-.progress-bar {
-  height: 4px;
-  background: #1a73e8;
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.3s;
-  margin-right: 12px;
-  flex: 1;
-}
-
-.progress-text {
-  font-size: 13px;
-  color: #5f6368;
-  white-space: nowrap;
 }
 
 .storage-bar-wrap {
@@ -125,12 +201,29 @@ body {
   margin-bottom: 16px;
   font-size: 14px;
   color: #5f6368;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+
+.breadcrumbs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.breadcrumbs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.breadcrumbs::-webkit-scrollbar-thumb {
+  background: #dadce0;
+  border-radius: 2px;
 }
 
 .breadcrumbs span {
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .breadcrumbs span:hover:not(.breadcrumb-current) {
@@ -142,6 +235,7 @@ body {
   font-weight: 500;
 }
 
+/* Drop area */
 .drop-area {
   display: none;
   position: fixed;
@@ -157,17 +251,11 @@ body {
   color: #1a73e8;
   z-index: 1000;
   backdrop-filter: blur(4px);
+  text-align: center;
+  padding: 20px;
 }
 
-.drop-area-show {
-  animation: dropFadeIn 0.2s ease-out;
-}
-
-@keyframes dropFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
+/* File list - Desktop styles */
 .file-list {
   width: 100%;
   background: white;
@@ -200,22 +288,6 @@ body {
   background: #f8f9fa;
 }
 
-.col-name {
-  width: 50%;
-}
-
-.col-time {
-  width: 25%;
-}
-
-.col-size {
-  width: 15%;
-}
-
-.col-action {
-  width: 10%;
-}
-
 .file-icon {
   font-size: 20px;
   margin-right: 12px;
@@ -226,6 +298,7 @@ body {
   color: #1a73e8;
   text-decoration: none;
   cursor: pointer;
+  word-break: break-word;
 }
 
 .folder-link:hover, .file-link:hover {
@@ -266,6 +339,54 @@ body {
   background: #e8f0fe;
 }
 
+/* Mobile File List */
+.mobile-file-list {
+  display: none;
+}
+
+.mobile-file-item {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mobile-file-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.mobile-file-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mobile-file-name {
+  flex: 1;
+  margin-left: 8px;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.mobile-file-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.mobile-file-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #5f6368;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f3f4;
+}
+
 .empty-note {
   text-align: center;
   padding: 60px 20px;
@@ -288,6 +409,7 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  padding: 20px;
 }
 
 .modal {
@@ -296,6 +418,7 @@ body {
   padding: 24px;
   min-width: 400px;
   max-width: 90vw;
+  width: 100%;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
@@ -304,6 +427,9 @@ body {
   font-weight: 500;
   margin-bottom: 16px;
   color: #202124;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .modal input {
@@ -359,39 +485,26 @@ body {
   gap: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   animation: toastSlideIn 0.3s ease-out;
+  max-width: calc(100vw - 40px);
 }
 
-.toast-success {
-  background: #4caf50;
-}
-
-.toast-error {
-  background: #f44336;
-}
+.toast-success { background: #4caf50; }
+.toast-error { background: #f44336; }
 
 .toast.fade-out {
   animation: toastSlideOut 0.6s ease-out forwards;
 }
 
 @keyframes toastSlideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes toastSlideOut {
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
+  to { transform: translateX(100%); opacity: 0; }
 }
 
-/* Upload queue styles */
+/* Upload queue - Desktop */
 .upload-queue {
   position: fixed;
   bottom: 20px;
@@ -460,20 +573,247 @@ body {
   transition: width 0.3s;
 }
 
-.upload-status-success {
-  color: #4caf50;
+.upload-status-success { color: #4caf50; }
+.upload-status-error { color: #f44336; }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; /* Tăng font size cho mobile */
+  }
+
+  .drive-header {
+    padding: 12px 16px;
+  }
+
+  .header-title {
+    font-size: 18px;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+
+  /* Toolbar mobile */
+  .toolbar {
+    gap: 8px;
+  }
+
+  .upload-label, .btn {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 48px; /* Touch target size */
+  }
+
+  .upload-label .mdi,
+  .btn .mdi {
+    font-size: 20px;
+  }
+
+  /* Storage bar */
+  #storageBar {
+    font-size: 14px;
+  }
+
+  /* Hide desktop file list, show mobile version */
+  .file-list {
+    display: none;
+  }
+
+  .mobile-file-list {
+    display: block;
+  }
+
+  .mobile-file-item .file-icon {
+    font-size: 24px;
+  }
+
+  .mobile-file-name {
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  .btn-action {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  /* Upload progress bar mobile */
+  .upload-progress-container {
+    padding: 16px;
+  }
+
+  .upload-progress-title {
+    font-size: 16px;
+  }
+
+  .upload-progress-bar {
+    height: 8px;
+  }
+
+  .upload-progress-text {
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  /* Toast mobile */
+  #toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .toast {
+    font-size: 16px;
+    padding: 16px;
+  }
+
+  /* Modal mobile */
+  .modal-bg {
+    padding: 16px;
+  }
+
+  .modal {
+    min-width: unset;
+    padding: 20px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+  }
+
+  .modal input {
+    padding: 16px;
+    font-size: 16px;
+  }
+
+  .btn-primary,
+  .btn-cancel {
+    padding: 12px 20px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+
+  /* Upload queue mobile - full width at bottom */
+  .upload-queue {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+    max-height: 50vh;
+  }
+
+  .upload-queue-header {
+    padding: 16px;
+    font-size: 16px;
+  }
+
+  .upload-item {
+    padding: 16px;
+  }
+
+  .upload-item-name {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .upload-item-progress {
+    font-size: 14px;
+  }
+
+  .upload-item-bar {
+    height: 6px;
+  }
+
+  /* Drop area mobile */
+  .drop-area {
+    font-size: 18px;
+    padding: 40px 20px;
+  }
+
+  /* Empty note mobile */
+  .empty-note {
+    padding: 40px 20px;
+    font-size: 16px;
+  }
+
+  /* Breadcrumbs mobile */
+  .breadcrumbs {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .breadcrumbs span {
+    padding: 8px 12px;
+  }
 }
 
-.upload-status-error {
-  color: #f44336;
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .upload-label,
+  .btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .mobile-file-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-actions .btn-primary,
+  .modal-actions .btn-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .upload-queue {
+    max-height: 40vh;
+  }
+
+  .drive-header {
+    position: static;
+  }
 }
   </style>
   <link rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png">
 </head>
 <body>
+  <!-- Upload Progress Bar -->
+  <div class="upload-progress-container" id="uploadProgressBar">
+    <div class="upload-progress-header">
+      <div class="upload-progress-title">
+        <span class="mdi mdi-cloud-upload"></span>
+        <span id="uploadProgressTitle">Đang tải lên...</span>
+      </div>
+      <button class="upload-progress-close" onclick="hideUploadProgress()">
+        <span class="mdi mdi-close"></span>
+      </button>
+    </div>
+    <div class="upload-progress-bar">
+      <div class="upload-progress-fill" id="uploadProgressFill" style="width: 0%"></div>
+    </div>
+    <div class="upload-progress-text" id="uploadProgressText">Chuẩn bị...</div>
+  </div>
+
   <div class="drive-header">
     <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Drive" style="width:32px;height:32px;margin-right:13px;">
-    <span class="header-title">Mini Google Drive - Direct Upload</span>
+    <span class="header-title">Mini Google Drive</span>
   </div>
   
   <div class="main-content">
@@ -493,8 +833,16 @@ body {
     
     <div id="storageBar" style="margin: 15px 0 18px 0; font-size:15px;"></div>
     <div class="breadcrumbs" id="breadcrumbs"></div>
-    <div class="drop-area" id="dropArea">Kéo & thả tệp/thư mục vào đây để tải lên...</div>
+    <div class="drop-area" id="dropArea">
+      <div>
+        <div style="margin-bottom: 16px;">
+          <span class="mdi mdi-cloud-upload" style="font-size: 48px;"></span>
+        </div>
+        Kéo & thả tệp/thư mục vào đây để tải lên
+      </div>
+    </div>
     
+    <!-- Desktop File List -->
     <table class="file-list" id="fileTable">
       <thead>
         <tr>
@@ -506,8 +854,16 @@ body {
       </thead>
       <tbody id="fileListBody"></tbody>
     </table>
+
+    <!-- Mobile File List -->
+    <div class="mobile-file-list" id="mobileFileList"></div>
     
-    <div class="empty-note" id="emptyNote" style="display: none;">Chưa có tệp hay thư mục nào</div>
+    <div class="empty-note" id="emptyNote" style="display: none;">
+      <div style="margin-bottom: 16px;">
+        <span class="mdi mdi-folder-outline" style="font-size: 48px; color: #dadce0;"></span>
+      </div>
+      Chưa có tệp hay thư mục nào
+    </div>
   </div>
   
   <div id="toast-container"></div>
@@ -524,16 +880,48 @@ body {
   </div>
 
 <script>
-// ==== Quota cá nhân ====
-const MY_QUOTA_GB = 0;
-
 // ==== Globals ====
+const MY_QUOTA_GB = 0;
 let currentFolderId = null;
 let breadcrumbs = [];
 let folderNameMap = {};
 let uploadQueue = [];
 let accessToken = null;
 let tokenExpiry = null;
+let globalUploadProgress = { current: 0, total: 0, currentFile: '' };
+
+// ==== Device detection ====
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
+// ==== Global Upload Progress Bar ====
+function showUploadProgress() {
+  document.getElementById('uploadProgressBar').classList.add('show');
+}
+
+function hideUploadProgress() {
+  document.getElementById('uploadProgressBar').classList.remove('show');
+  globalUploadProgress = { current: 0, total: 0, currentFile: '' };
+}
+
+function updateGlobalUploadProgress(current, total, currentFile, progress = 0) {
+  globalUploadProgress.current = current;
+  globalUploadProgress.total = total;
+  globalUploadProgress.currentFile = currentFile;
+  
+  const overallProgress = total > 0 ? ((current - 1 + progress / 100) / total * 100) : 0;
+  
+  document.getElementById('uploadProgressFill').style.width = overallProgress + '%';
+  document.getElementById('uploadProgressTitle').textContent = `Đang tải lên (${current}/${total})`;
+  document.getElementById('uploadProgressText').textContent = `${currentFile} - ${progress.toFixed(0)}%`;
+  
+  if (current >= total && progress >= 100) {
+    setTimeout(() => {
+      hideUploadProgress();
+    }, 2000);
+  }
+}
 
 // ==== Toast notifications ====
 function showToast(msg, type = 'info') {
@@ -545,12 +933,12 @@ function showToast(msg, type = 'info') {
   setTimeout(() => {
     toast.classList.add('fade-out');
     setTimeout(() => toast.remove(), 600);
-  }, 2300);
+  }, isMobile() ? 3000 : 2300);
 }
 
-// ==== Lấy access token từ server ====
+// ==== Access Token ====
 async function getAccessToken() {
-  if (accessToken && tokenExpiry && Date.now() < tokenExpiry - 300000) { // 5 phút buffer
+  if (accessToken && tokenExpiry && Date.now() < tokenExpiry - 300000) {
     return accessToken;
   }
   
@@ -570,625 +958,25 @@ async function getAccessToken() {
   }
 }
 
-// ==== Direct Upload lên Google Drive ====
-async function directUploadToGoogleDrive(file, parentId = null, relativePath = '') {
-  const uploadId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-  
-  // Thêm vào upload queue UI
-  addToUploadQueue(uploadId, file.name);
-  
+// ==== Direct Upload ====
+async function getAccessToken() {
+  if (accessToken && tokenExpiry && Date.now() < tokenExpiry - 300000) {
+    return accessToken;
+  }
+
   try {
-    // B1: Lấy access token
-    const token = await getAccessToken();
-    updateUploadProgress(uploadId, 5, 'Đang chuẩn bị...');
-    
-    // B2: Tạo upload session thông qua server
-    const sessionRes = await fetch('/create-upload-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fileName: file.name,
-        mimeType: file.type || 'application/octet-stream',
-        parentId,
-        relativePath
-      })
-    });
-    
-    const sessionData = await sessionRes.json();
-    if (!sessionData.success) {
-      throw new Error('Không thể tạo upload session');
+    const res = await fetch('/get-upload-token', { method: 'POST' });
+    const data = await res.json();
+
+    if (data.accessToken) {
+      accessToken = data.accessToken;
+      // expiresIn thường trả về giây → phải cộng với Date.now()
+      tokenExpiry = Date.now() + data.expiresIn * 1000;
+      return accessToken;
     }
-    
-    updateUploadProgress(uploadId, 10, 'Tạo session...');
-    
-    // B3: Tạo resumable upload session với Google Drive
-    const metadata = {
-      name: sessionData.fileName,
-      parents: [sessionData.targetParentId]
-    };
-    
-    let uploadUrl;
-    if (sessionData.isUpdate && sessionData.fileId) {
-      // Update existing file
-      const resumableRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${sessionData.fileId}?uploadType=resumable`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(metadata)
-      });
-      uploadUrl = resumableRes.headers.get('Location');
-    } else {
-      // Create new file
-      const resumableRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(metadata)
-      });
-      uploadUrl = resumableRes.headers.get('Location');
-    }
-    
-    if (!uploadUrl) {
-      throw new Error('Không nhận được upload URL');
-    }
-    
-    updateUploadProgress(uploadId, 15, 'Bắt đầu upload...');
-    
-    // B4: Upload file với progress tracking
-    await uploadFileWithProgress(uploadUrl, file, uploadId);
-    
-    updateUploadProgress(uploadId, 95, 'Hoàn tất...');
-    
-    // B5: Lấy thông tin file và tạo share link
-    const fileInfo = await getFileInfoFromUploadUrl(uploadUrl);
-    await completeUpload(fileInfo.id);
-    
-    updateUploadProgress(uploadId, 100, 'Hoàn thành', 'success');
-    
-    return fileInfo;
-    
+    throw new Error('Không nhận được access token');
   } catch (err) {
-    console.error('Lỗi direct upload:', err);
-    updateUploadProgress(uploadId, 0, `Lỗi: ${err.message}`, 'error');
+    console.error('Lỗi lấy access token:', err);
     throw err;
   }
 }
-
-// ==== Upload file với progress tracking ====
-async function uploadFileWithProgress(uploadUrl, file, uploadId) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable) {
-        const progress = 15 + Math.round((e.loaded / e.total) * 75); // 15-90%
-        updateUploadProgress(uploadId, progress, `${Math.round(e.loaded/e.total*100)}%`);
-      }
-    });
-    
-    xhr.addEventListener('load', () => {
-      if (xhr.status === 200 || xhr.status === 201) {
-        resolve(JSON.parse(xhr.responseText));
-      } else {
-        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
-      }
-    });
-    
-    xhr.addEventListener('error', () => {
-      reject(new Error('Network error during upload'));
-    });
-    
-    xhr.open('PUT', uploadUrl);
-    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-    xhr.send(file);
-  });
-}
-
-// ==== Lấy file info từ upload URL ====
-async function getFileInfoFromUploadUrl(uploadUrl) {
-  const response = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'Content-Length': '0'
-    }
-  });
-  return response.json();
-}
-
-// ==== Hoàn tất upload (tạo share link) ====
-async function completeUpload(fileId) {
-  const res = await fetch('/complete-upload', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fileId })
-  });
-  return res.json();
-}
-
-// ==== Upload Queue Management ====
-function addToUploadQueue(uploadId, fileName) {
-  uploadQueue.push({ id: uploadId, name: fileName, progress: 0, status: 'Đang chuẩn bị...' });
-  updateUploadQueueUI();
-  showUploadQueue();
-}
-
-function updateUploadProgress(uploadId, progress, status, type = 'info') {
-  const item = uploadQueue.find(i => i.id === uploadId);
-  if (item) {
-    item.progress = progress;
-    item.status = status;
-    item.type = type;
-    updateUploadQueueUI();
-    
-    // Auto hide sau 3s nếu hoàn thành hoặc lỗi
-    if (progress === 100 || type === 'error') {
-      setTimeout(() => {
-        removeFromUploadQueue(uploadId);
-      }, 3000);
-    }
-  }
-}
-
-function removeFromUploadQueue(uploadId) {
-  uploadQueue = uploadQueue.filter(i => i.id !== uploadId);
-  updateUploadQueueUI();
-  
-  if (uploadQueue.length === 0) {
-    hideUploadQueue();
-  }
-}
-
-function updateUploadQueueUI() {
-  const queueBody = document.getElementById('uploadQueueBody');
-  queueBody.innerHTML = uploadQueue.map(item => `
-    <div class="upload-item">
-      <div class="upload-item-name">${item.name}</div>
-      <div class="upload-item-progress">
-        <div class="upload-item-bar">
-          <div class="upload-item-fill" style="width: ${item.progress}%"></div>
-        </div>
-        <span class="upload-status-${item.type || 'info'}">${item.status}</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-function showUploadQueue() {
-  document.getElementById('uploadQueue').style.display = 'block';
-}
-
-function hideUploadQueue() {
-  document.getElementById('uploadQueue').style.display = 'none';
-}
-
-// ==== File selection handlers ====
-async function handleFileSelect(fileList, folderId) {
-  if (!fileList || !fileList.length) return;
-  
-  showToast(`Bắt đầu tải lên ${fileList.length} file(s)...`, 'info');
-  
-  for (let file of fileList) {
-    try {
-      await directUploadToGoogleDrive(file, folderId);
-    } catch (err) {
-      showToast(`Lỗi upload ${file.name}: ${err.message}`, 'error');
-    }
-  }
-  
-  // Refresh file list
-  await fetchFiles(currentFolderId);
-  await fetchStorage();
-  
-  // Clear input
-  document.getElementById('fileInput').value = '';
-}
-
-async function handleFolderSelect(fileList, folderId) {
-  if (!fileList || !fileList.length) return;
-  
-  showToast(`Bắt đầu tải lên thư mục với ${fileList.length} file(s)...`, 'info');
-  
-  for (let file of fileList) {
-    try {
-      await directUploadToGoogleDrive(file, folderId, file.webkitRelativePath);
-    } catch (err) {
-      showToast(`Lỗi upload ${file.name}: ${err.message}`, 'error');
-    }
-  }
-  
-  await fetchFiles(currentFolderId);
-  await fetchStorage();
-  
-  document.getElementById('folderInput').value = '';
-}
-
-// ==== Storage info ====
-async function fetchStorage() {
-  try {
-    const res = await fetch('/storage');
-    const quota = await res.json();
-    const usedBytes = quota.usageInDrive ? Number(quota.usageInDrive) : 0;
-    let totalQuotaBytes = quota.limit ? Number(quota.limit) : 0;
-    let quotaGB = (typeof MY_QUOTA_GB !== "undefined" && MY_QUOTA_GB > 0)
-      ? MY_QUOTA_GB
-      : (totalQuotaBytes > 0 ? totalQuotaBytes / 1024 / 1024 / 1024 : 0);
-    let quotaText = quotaGB > 0
-      ? quotaGB.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : "Không giới hạn";
-    let percent = (quotaGB > 0)
-      ? ((usedBytes / (quotaGB * 1024 * 1024 * 1024)) * 100).toFixed(2)
-      : "";
-    const usedGB = toGB(usedBytes);
-
-    let percentStr = percent ? `(${percent}%)` : "";
-
-    const html = `
-      <b>Bộ nhớ Drive:</b> Đã dùng ${usedGB} GB / ${quotaText} GB
-      ${percentStr}
-      <div class="storage-bar-wrap">
-        <div class="storage-bar-bg">
-          <div class="storage-bar-used" style="width:${percent || 1}%;"></div>
-        </div>
-      </div>
-    `;
-    document.getElementById('storageBar').innerHTML = html;
-  } catch (e) {
-    document.getElementById('storageBar').innerHTML = '<span style="color:red">Không lấy được thông tin dung lượng</span>';
-  }
-}
-
-function toGB(bytes) {
-  return (bytes / 1024 / 1024 / 1024).toLocaleString('vi-VN', {minimumFractionDigits:2, maximumFractionDigits:2});
-}
-
-function formatSize(bytes) {
-  if (!bytes) return '';
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(1)+' KB';
-  if (bytes < 1024*1024*1024) return (bytes/1024/1024).toFixed(1)+' MB';
-  return (bytes/1024/1024/1024).toFixed(2)+' GB';
-}
-
-// ==== Breadcrumbs ====
-function renderBreadcrumbs() {
-  const bc = document.getElementById('breadcrumbs');
-  if (!breadcrumbs.length) return;
-  bc.innerHTML = '';
-  breadcrumbs.forEach((b, i) => {
-    if (i > 0) bc.innerHTML += `<span class="mdi mdi-chevron-right"></span>`;
-    if (i === breadcrumbs.length - 1) {
-      bc.innerHTML += `<span class="breadcrumb-current">${b.name}</span>`;
-    } else {
-      bc.innerHTML += `<span onclick="openFolderByBreadcrumb(${i})">${b.name}</span>`;
-    }
-  });
-}
-
-function openFolderByBreadcrumb(idx) {
-  const target = breadcrumbs[idx];
-  breadcrumbs = breadcrumbs.slice(0, idx + 1);
-  openFolder(target.id, false);
-}
-
-// ==== File type icons ====
-function getFileTypeIcon(file) {
-  if (file.isFolder) return '<span class="mdi mdi-folder file-icon" style="color:#ffb300"></span>';
-  const ext = (file.name || '').split('.').pop().toLowerCase();
-  switch (ext) {
-    case 'xml':   return '<span class="mdi mdi-xml file-icon" style="color:#7d63e0"></span>';
-    case 'py':    return '<span class="mdi mdi-language-python file-icon" style="color:#306998"></span>';
-    case 'php':   return '<span class="mdi mdi-language-php file-icon" style="color:#6e4fbb"></span>';
-    case 'json':  return '<span class="mdi mdi-code-json file-icon" style="color:#01a98e"></span>';
-    case 'exe':   return '<span class="mdi mdi-cog file-icon" style="color:#455a64"></span>';
-    case 'apk':   return '<span class="mdi mdi-android file-icon" style="color:#43b755"></span>';
-    case 'cs':    return '<span class="mdi mdi-language-csharp file-icon" style="color:#512bd4"></span>';
-    case 'js':    return '<span class="mdi mdi-language-javascript file-icon" style="color:#efd81d"></span>';
-    case 'html':  return '<span class="mdi mdi-language-html5 file-icon" style="color:#e34c26"></span>';
-    case 'css':   return '<span class="mdi mdi-language-css3 file-icon" style="color:#2965f1"></span>';
-    case 'zip': case 'rar': return '<span class="mdi mdi-folder-zip file-icon" style="color:#607d8b"></span>';
-    case 'txt':   return '<span class="mdi mdi-file-document-outline file-icon" style="color:#222"></span>';
-    case 'pdf':   return '<span class="mdi mdi-file-pdf-box file-icon" style="color:#ea4335"></span>';
-    case 'doc': case 'docx': return '<span class="mdi mdi-file-word-box file-icon" style="color:#4285f4"></span>';
-    case 'xls': case 'xlsx': return '<span class="mdi mdi-file-excel-box file-icon" style="color:#34a853"></span>';
-    case 'png': case 'jpg': case 'jpeg': case 'gif': case 'bmp': return '<span class="mdi mdi-file-image file-icon" style="color:#fbc02d"></span>';
-    case 'mp3': case 'wav': return '<span class="mdi mdi-file-music file-icon" style="color:#9c27b0"></span>';
-    case 'mp4': case 'mov': return '<span class="mdi mdi-file-video file-icon" style="color:#00acc1"></span>';
-    default: return '<span class="mdi mdi-file-outline file-icon" style="color:#636c72"></span>';
-  }
-}
-
-// ==== File list rendering ====
-function renderFileRow(f) {
-  return `
-    <tr>
-      <td class="col-name">
-        ${getFileTypeIcon(f)}
-        ${f.isFolder
-          ? `<span class="folder-link" onclick="openFolder('${f.id}')">${f.name}</span>`
-          : (f.shareLink
-              ? `<a class="file-link" href="${f.shareLink}" target="_blank" rel="noopener">${f.name}</a>`
-              : `<span class="file-link">${f.name}</span>`
-            )
-        }
-      </td>
-      <td class="col-time">${f.modifiedTime ? new Date(f.modifiedTime).toLocaleString() : ''}</td>
-      <td class="col-size">${f.size ? formatSize(f.size) : ''}</td>
-      <td>
-        <div class="action-group">
-        ${!f.isFolder ? `
-          <a class="btn-action btn-download mdi mdi-download" title="Tải về" href="/download/${f.id}" download></a>
-        ` : ''}
-          <button class="btn-action btn-delete mdi mdi-delete" title="Xóa" onclick="deleteFile('${f.id}', ${f.isFolder})"></button>
-        </div>
-      </td>
-    </tr>
-  `;
-}
-
-// ==== Fetch & display files ====
-async function fetchFiles(folderId) {
-  const url = folderId ? `/files?parentId=${encodeURIComponent(folderId)}` : '/files';
-  const res = await fetch(url);
-  const files = await res.json();
-  const tbody = document.getElementById('fileListBody');
-  const emptyNote = document.getElementById('emptyNote');
-  
-  tbody.innerHTML = '';
-  if (!files.length) {
-    emptyNote.style.display = 'block';
-    return;
-  }
-  
-  emptyNote.style.display = 'none';
-  files.sort((a,b) => {
-    if (a.isFolder && !b.isFolder) return -1;
-    if (!a.isFolder && b.isFolder) return 1;
-    return a.name.localeCompare(b.name, 'vi');
-  });
-  
-  tbody.innerHTML = files.map(renderFileRow).join('');
-}
-
-// ==== Folder operations ====
-async function openFolder(folderId, pushBread = true) {
-  currentFolderId = folderId;
-  await fetchFiles(folderId);
-  
-  if (pushBread) {
-    let name = 'Tệp của bạn';
-    if (folderId && folderNameMap[folderId]) {
-      name = folderNameMap[folderId];
-    } else if (folderId) {
-      try {
-        const res = await fetch('/folderinfo/' + folderId);
-        const info = await res.json();
-        name = info.name || 'Thư mục';
-        folderNameMap[folderId] = name;
-      } catch { }
-    }
-    breadcrumbs.push({ id: folderId, name });
-  }
-  
-  renderBreadcrumbs();
-  fetchStorage();
-}
-
-function promptCreateFolder() {
-  if (!document.getElementById('modalCreateFolder')) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-bg';
-    modal.id = 'modalCreateFolder';
-    modal.innerHTML = `
-      <div class="modal">
-        <div class="modal-title"><span class="mdi mdi-folder-plus-outline"></span> Tạo thư mục mới</div>
-        <input id="newFolderName" type="text" placeholder="Tên thư mục...">
-        <div class="modal-actions">
-          <button class="btn btn-primary" onclick="submitCreateFolder()">Tạo</button>
-          <button class="btn btn-cancel" onclick="closeModalCreateFolder()">Hủy</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  }
-  document.getElementById('newFolderName').value = "";
-  document.getElementById('modalCreateFolder').style.display = 'flex';
-  setTimeout(() => document.getElementById('newFolderName').focus(), 100);
-}
-
-function closeModalCreateFolder() {
-  document.getElementById('modalCreateFolder').style.display = 'none';
-}
-
-async function submitCreateFolder() {
-  let name = document.getElementById('newFolderName').value.trim();
-  if (!name) {
-    showToast('Vui lòng nhập tên thư mục!', 'error');
-    return;
-  }
-  
-  closeModalCreateFolder();
-  showToast('Đang tạo thư mục...', 'info');
-  
-  const res = await fetch('/create-folder', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ name, parentId: currentFolderId })
-  });
-  
-  await fetchFiles(currentFolderId);
-  showToast('Đã tạo thư mục!', 'success');
-}
-
-// ==== Drag & Drop ====
-function setupDragDrop() {
-  const dropArea = document.getElementById('dropArea');
-  let dragTimeout = null;
-
-  ['dragenter', 'dragover'].forEach(eventName => {
-    window.addEventListener(eventName, e => {
-      e.preventDefault();
-      e.stopPropagation();
-      clearTimeout(dragTimeout);
-      dropArea.style.display = 'flex';
-      dropArea.classList.add('drop-area-show');
-    });
-  });
-
-  ['dragleave', 'drop'].forEach(eventName => {
-    window.addEventListener(eventName, e => {
-      e.preventDefault();
-      e.stopPropagation();
-      dragTimeout = setTimeout(() => {
-        dropArea.classList.remove('drop-area-show');
-        dropArea.style.display = 'none';
-      }, 120);
-    });
-  });
-
-  dropArea.addEventListener('drop', async e => {
-    e.preventDefault();
-    dropArea.style.display = 'none';
-    dropArea.classList.remove('drop-area-show');
-    
-    let items = e.dataTransfer.items;
-    if (items && items.length > 0) {
-      showToast('Đang xử lý files...', 'info');
-      
-      let hasDir = false;
-      for (let i = 0; i < items.length; i++) {
-        let entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
-        if (entry && entry.isDirectory) hasDir = true;
-      }
-      
-      if (hasDir) {
-        // Có thư mục - xử lý từng entry
-        for (let i = 0; i < items.length; i++) {
-          let entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
-          if (entry) {
-            if (entry.isDirectory) {
-              await processDirectoryEntry(entry, currentFolderId);
-            } else {
-              entry.file(async file => {
-                await directUploadToGoogleDrive(file, currentFolderId);
-              });
-            }
-          }
-        }
-      } else {
-        // Chỉ file
-        let files = [];
-        for (let i = 0; i < items.length; i++) {
-          if (items[i].getAsFile) {
-            files.push(items[i].getAsFile());
-          }
-        }
-        
-        for (let file of files) {
-          await directUploadToGoogleDrive(file, currentFolderId);
-        }
-      }
-      
-      await fetchFiles(currentFolderId);
-      await fetchStorage();
-    }
-  });
-}
-
-async function processDirectoryEntry(entry, parentId) {
-  // Tạo folder trên server
-  const folderRes = await fetch('/create-folder', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name: entry.name, parentId})
-  });
-  const newFolder = await folderRes.json();
-  
-  // Đọc nội dung thư mục
-  const dirReader = entry.createReader();
-  const entries = await new Promise(resolve => {
-    dirReader.readEntries(resolve);
-  });
-  
-  // Xử lý từng item
-  for (let childEntry of entries) {
-    if (childEntry.isDirectory) {
-      await processDirectoryEntry(childEntry, newFolder.id);
-    } else {
-      childEntry.file(async file => {
-        file.webkitRelativePath = entry.name + '/' + childEntry.name;
-        await directUploadToGoogleDrive(file, newFolder.id);
-      });
-    }
-  }
-}
-
-// ==== Delete file ====
-function showConfirm(msg, onOk, onCancel) {
-  let old = document.getElementById('modalConfirm');
-  if (old) old.remove();
-  
-  const modal = document.createElement('div');
-  modal.className = 'modal-bg';
-  modal.id = 'modalConfirm';
-  modal.innerHTML = `
-    <div class="modal">
-      <div class="modal-title"><span class="mdi mdi-alert-outline"></span> Xác nhận</div>
-      <div style="margin: 16px 0 13px 0; font-size:16.2px; color:#212529;">${msg}</div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" id="btnOk">Đồng ý</button>
-        <button class="btn btn-cancel" id="btnCancel">Hủy</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  
-  setTimeout(() => { document.getElementById('btnOk').focus(); }, 70);
-  
-  document.getElementById('btnOk').onclick = function() {
-    modal.remove();
-    if (onOk) onOk();
-  };
-  
-  document.getElementById('btnCancel').onclick = function() {
-    modal.remove();
-    if (onCancel) onCancel();
-  };
-}
-
-async function deleteFile(id, isFolder = false) {
-  showConfirm(
-    `Bạn chắc chắn muốn xóa ${isFolder ? 'thư mục' : 'file'} này?`,
-    async () => {
-      try {
-        const res = await fetch('/delete/' + id, { method: 'DELETE' });
-        if (res.ok) {
-          await fetchFiles(currentFolderId);
-          fetchStorage();
-          showToast((isFolder ? 'Đã xóa thư mục!' : 'Đã xóa file!'), 'success');
-        } else {
-          showToast('Xóa thất bại!', 'error');
-        }
-      } catch {
-        showToast('Lỗi xóa file/thư mục!', 'error');
-      }
-    },
-    () => showToast('Đã hủy thao tác xóa.', 'info')
-  );
-}
-
-// ==== Initialize ====
-window.onload = function() {
-  breadcrumbs = [{ id: null, name: 'Tệp của bạn' }];
-  setupDragDrop();
-  openFolder(null, false);
-  renderBreadcrumbs();
-  fetchStorage();
-};
-</script>
-
-</body>
-</html>
