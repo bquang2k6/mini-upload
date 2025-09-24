@@ -1042,6 +1042,8 @@ async function directUploadToGoogleDrive(file, parentId = null, relativePath = '
     await completeUpload(fileInfo.id);
     
     updateUploadProgress(uploadId, 100, 'Hoàn thành', 'success');
+    // 👉 Load lại danh sách sau khi upload
+    await loadFileList(currentFolderId);
     
     return fileInfo;
     
