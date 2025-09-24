@@ -1345,6 +1345,36 @@ async function fetchFiles(folderId) {
   });
   
   tbody.innerHTML = files.map(renderFileRow).join('');
+  // Mobile render - THÊM PHẦN NÀY
+  mobileList.innerHTML = files.map(renderMobileFileRow).join('');
+}
+function renderMobileFileRow(f) {
+  return `
+    <div class="mobile-file-item">
+      <div class="mobile-file-header">
+        ${getFileTypeIcon(f)}
+        <div class="mobile-file-name">
+          ${f.isFolder
+            ? `<span class="folder-link" onclick="openFolder('${f.id}')">${f.name}</span>`
+            : (f.shareLink
+                ? `<a class="file-link" href="${f.shareLink}" target="_blank" rel="noopener">${f.name}</a>`
+                : `<span class="file-link">${f.name}</span>`
+              )
+          }
+        </div>
+        <div class="mobile-file-actions">
+          ${!f.isFolder ? `
+            <a class="btn-action btn-download mdi mdi-download" title="Tải về" href="/download/${f.id}" download></a>
+          ` : ''}
+          <button class="btn-action btn-delete mdi mdi-delete" title="Xóa" onclick="deleteFile('${f.id}', ${f.isFolder})"></button>
+        </div>
+      </div>
+      <div class="mobile-file-meta">
+        <span>${f.modifiedTime ? new Date(f.modifiedTime).toLocaleString() : ''}</span>
+        <span>${f.size ? formatSize(f.size) : ''}</span>
+      </div>
+    </div>
+  `;
 }
 
 // ==== Folder operations ====
