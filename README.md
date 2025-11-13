@@ -152,39 +152,18 @@ vercel --prod
   <img src="https://locket.wangtech.top/banking_infor.png" alt="Mời cà phê" width="240" />
 </p>
 
-<h3 style="text-align: left; margin-bottom: 12px;">Một số dự án của tôi:</h3>
+<h3 align="left">Một số dự án của tôi:</h3>
 
-<div style="
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  align-items: center;
-  justify-content: flex-start;
-">
-  <a href="https://locket.wangtech.top" target="_blank" rel="noopener noreferrer" style="
-    text-decoration: none;
-    color: inherit;
-    text-align: center;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-  ">
-    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket Wan" width="40" height="40" style="display: block; margin: 0 auto;" />
-    <div style="font-size: 15px; margin-top: 6px;">Locket Wan</div>
+<p align="left">
+  <a class="project" href="https://locket.wangtech.top" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; text-align:center; margin-right:30px;">
+    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket Wan" height="30" width="30" />
+    <br>
+    <span style="font-size:14px; color:inherit;">Locket Wan</span>
   </a>
 
-  <a href="https://locket-tdtu.wangtech.top" target="_blank" rel="noopener noreferrer" style="
-    text-decoration: none;
-    color: inherit;
-    text-align: center;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-  ">
-    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket TDTU" width="40" height="40" style="display: block; margin: 0 auto;" />
-    <div style="font-size: 15px; margin-top: 6px;">Locket TDTU</div>
+  <a class="project" href="https://locket-tdtu.wangtech.top" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; text-align:center;">
+    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket TDTU" height="30" width="30" />
+    <br>
+    <span style="font-size:14px; color:inherit;">Locket TDTU</span>
   </a>
-</div>
-
-<style>
-  a:hover {
-    transform: scale(1.1);
-    opacity: 0.9;
-  }
-</style>
+</p>
