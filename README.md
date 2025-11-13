@@ -1,5 +1,5 @@
 
-**Mini Google Drive** là một dự án giúp bạn upload, quản lý và chia sẻ file qua Google Drive với giao diện web thân thiện. Có thể chạy ngay trên localhost và vercel
+**Mini Google Drive** là một dự án giúp bạn upload, quản lý và chia sẻ file qua Google Drive với giao diện web thân thiện. Chỉ chạy trên vercel
 
 ---
 
