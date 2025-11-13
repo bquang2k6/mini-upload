@@ -1,11 +1,15 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/handler.js", "use": "@vercel/node" },
-    { "src": "public/**", "use": "@vercel/static" }
+    { "src": "api/handler.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "^/public/(.*)", "dest": "/public/$1" },
     { "src": "/(.*)", "dest": "/api/handler.js" }
-  ]
+  ],
+  "env": {
+    "YOUR_CLIENT_ID": "@your_client_id",
+    "YOUR_CLIENT_SECRET": "@your_client_secret",
+    "YOUR_REDIRECT_URI": "@your_redirect_uri",
+    "YOUR_REFRESH_TOKEN": "@your_refresh_token"
+  }
 }

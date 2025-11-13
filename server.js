@@ -12,18 +12,32 @@ const CLIENT_SECRET = process.env.YOUR_CLIENT_SECRET;
 const REDIRECT_URI = process.env.YOUR_REDIRECT_URI;
 const REFRESH_TOKEN = process.env.YOUR_REFRESH_TOKEN;
 
+// Kiểm tra và warning nhưng không exit (để tránh lỗi trên Vercel)
 if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI || !REFRESH_TOKEN) {
-  console.error('❌ Thiếu environment variables!');
-  process.exit(1);
+  console.warn('⚠️  Thiếu một số environment variables - API sẽ không hoạt động');
+  console.warn('Vui lòng set các biến: YOUR_CLIENT_ID, YOUR_CLIENT_SECRET, YOUR_REDIRECT_URI, YOUR_REFRESH_TOKEN');
 }
 
-const oauth2Client = new google.auth.OAuth2(
-  CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
-);
-oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+let oauth2Client = null;
+let drive = null;
 
-const drive = google.drive({ version: 'v3', auth: oauth2Client });
+if (CLIENT_ID && CLIENT_SECRET && REDIRECT_URI && REFRESH_TOKEN) {
+  oauth2Client = new google.auth.OAuth2(
+    CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
+  );
+  oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+  drive = google.drive({ version: 'v3', auth: oauth2Client });
+}
+
 app.use(express.json());
+
+// ==== Middleware: Check API availability ====
+app.use((req, res, next) => {
+  if (!drive && req.path !== '/' && !req.path.startsWith('/public')) {
+    return res.status(503).json({ error: 'API chưa được cấu hình - Vui lòng set environment variables' });
+  }
+  next();
+});
 
 // ==== Cache cho upload root folder ====
 let uploadRootFolderId = null;

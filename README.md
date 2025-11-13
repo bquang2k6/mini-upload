@@ -3,7 +3,16 @@
 
 ---
 
-## 💾 Yêu cầu hệ thống
+## � Nội dung chính
+
+- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
+- [Setup Local](#setup-local)
+- [Deploy trên Vercel](#deploy-trên-vercel)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## �💾 Yêu cầu hệ thống
 
 - Node.js >= 16.x
 - npm hoặc yarn
@@ -11,10 +20,160 @@
 - Đã bật Google Drive API (xem hướng dẫn bên dưới)
 
 ---
-![Ảnh minh họa](Screenshot.png)
+
+## ✨ Setup Local
+
+### 1. Cài đặt dependencies
+```bash
+npm install
+```
+
+### 2. Tạo file `.env`
+Copy từ `.env.example`:
+```bash
+cp .env.example .env
+```
+
+### 3. Điền Google Drive API credentials vào `.env`
+```env
+YOUR_CLIENT_ID=xxx.apps.googleusercontent.com
+YOUR_CLIENT_SECRET=xxx
+YOUR_REDIRECT_URI=https://developers.google.com/oauthplayground
+YOUR_REFRESH_TOKEN=xxx
+```
+
+### 4. Chạy dev server (với hot reload)
+```bash
+npm run dev
+```
+
+Server sẽ chạy tại: **http://localhost:3001** 🎉
+
 ---
 
-## 🚀 Hướng dẫn cài đặt
+## 🚀 Deploy trên Vercel
+
+### Bước 1: Chuẩn bị Google Drive API credentials
+- Tạo OAuth Client trên [Google Cloud Console](https://console.cloud.google.com/)
+- Lấy `CLIENT_ID`, `CLIENT_SECRET`, `REFRESH_TOKEN`
+- Set `REDIRECT_URI` = `https://developers.google.com/oauthplayground`
+
+### Bước 2: Deploy với Vercel
+```bash
+npm install -g vercel
+vercel
+```
+
+Chọn "Y" khi hỏi import settings từ vercel.json
+
+### Bước 3: Set Environment Variables trên Vercel Dashboard
+
+1. Vào project trên Vercel: https://vercel.com/dashboard
+2. Chọn project của bạn
+3. Vào **Settings > Environment Variables**
+4. Thêm 4 biến:
+   ```
+   YOUR_CLIENT_ID = <your_client_id>
+   YOUR_CLIENT_SECRET = <your_client_secret>
+   YOUR_REDIRECT_URI = https://developers.google.com/oauthplayground
+   YOUR_REFRESH_TOKEN = <your_refresh_token>
+   ```
+
+### Bước 4: Redeploy
+```bash
+vercel --prod
+```
+
+✅ Dự án sẽ chạy tại: **https://your-project-name.vercel.app**
+
+---
+
+## 🔍 Troubleshooting
+
+### ❌ Vercel trả lỗi "API not configured" hoặc 503?
+
+**Giải pháp:**
+1. Kiểm tra environment variables trên Vercel dashboard
+2. Đảm bảo tất cả 4 biến đã được set (không có biến nào trống)
+3. Vào **Deployments > Logs** để xem chi tiết lỗi
+4. Redeploy: `vercel --prod`
+
+### ❌ Local chạy lỗi "Cannot read property 'files' of null"?
+
+**Giải pháp:**
+- Đảm bảo file `.env` tồn tại và có tất cả 4 biến
+- Xóa `node_modules` và chạy `npm install` lại
+- Chắc chắn `npm run dev` đã được chạy (không phải `node server.js`)
+
+### ❌ Port 3001 bị chiếm dụng?
+
+**Giải pháp:**
+```bash
+# Windows
+netstat -ano | findstr :3001
+taskkill /PID <PID> /F
+
+# Linux/Mac
+lsof -i :3001
+kill -9 <PID>
+```
+
+Hoặc thay đổi PORT:
+```bash
+PORT=3002 npm run dev
+```
+
+---
+
+## 📁 Cấu trúc Project
+
+```
+.
+├── api/
+│   └── handler.js              # Serverless handler cho Vercel
+├── public/
+│   └── index.html              # Frontend (HTML + CSS + JS)
+├── server.js                   # Express server + API routes
+├── index.js                    # Entry point cho local
+├── package.json                # Dependencies
+├── vercel.json                 # Cấu hình Vercel
+├── .env.example                # Template .env
+├── .vercelignore               # Files bỏ qua khi deploy
+└── README.md                   # File này
+```
+
+---
+
+## 🎯 Features
+
+✅ Upload file lên Google Drive  
+✅ Tạo & quản lý folder  
+✅ Download file  
+✅ Xóa file  
+✅ Chia sẻ file (public link)  
+✅ Xem dung lượng sử dụng  
+✅ Responsive design (mobile-friendly)  
+✅ Chạy được trên local + Vercel  
+✅ Hot reload khi dev  
+
+---
+
+## � Support
+
+Nếu có vấn đề, vui lòng:
+1. Kiểm tra lại Google Drive API credentials
+2. Xem Vercel Logs để xác định lỗi
+3. Đảm bảo Node.js version >= 16.x
+
+---
+
+## 📜 License
+
+MIT
+
+---
+
+## �🚀 Hướng dẫn cài đặt (Cũ)
 
 ### 1. Clone dự án về máy
 

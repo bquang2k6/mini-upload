@@ -1,0 +1,8 @@
+node_modules
+.env
+.git
+.gitignore
+README.md
+temp
+styles.css
+.env.example
