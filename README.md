@@ -152,20 +152,39 @@ vercel --prod
   <img src="https://locket.wangtech.top/banking_infor.png" alt="Mời cà phê" width="240" />
 </p>
 
-<h3 align="left">Một số dự án của tôi:</h3>
+<h3 style="text-align: left; margin-bottom: 12px;">Một số dự án của tôi:</h3>
 
-<div style="display: flex; align-items: center; gap: 30px;">
-  <a href="https://locket.wangtech.top" target="_blank" rel="noopener noreferrer"
-     style="text-decoration: none; text-align: center; color: inherit;">
-    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket Wan" width="30" height="30" style="display: block; margin: 0 auto;" />
-    <div style="font-size: 14px; margin-top: 6px;">Locket Wan</div>
+<div style="
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  align-items: center;
+  justify-content: flex-start;
+">
+  <a href="https://locket.wangtech.top" target="_blank" rel="noopener noreferrer" style="
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  ">
+    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket Wan" width="40" height="40" style="display: block; margin: 0 auto;" />
+    <div style="font-size: 15px; margin-top: 6px;">Locket Wan</div>
   </a>
 
-  <a href="https://locket-tdtu.wangtech.top" target="_blank" rel="noopener noreferrer"
-     style="text-decoration: none; text-align: center; color: inherit;">
-    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket TDTU" width="30" height="30" style="display: block; margin: 0 auto;" />
-    <div style="font-size: 14px; margin-top: 6px;">Locket TDTU</div>
+  <a href="https://locket-tdtu.wangtech.top" target="_blank" rel="noopener noreferrer" style="
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  ">
+    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket TDTU" width="40" height="40" style="display: block; margin: 0 auto;" />
+    <div style="font-size: 15px; margin-top: 6px;">Locket TDTU</div>
   </a>
 </div>
 
-
+<style>
+  a:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+</style>
