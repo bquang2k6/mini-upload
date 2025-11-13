@@ -3,6 +3,19 @@
 
 ---
 
+## Tính năng
+
+✅ Upload file lên Google Drive  
+✅ Tạo & quản lý folder  
+✅ Download file  
+✅ Xóa file  
+✅ Chia sẻ file (public link)  
+✅ Xem dung lượng sử dụng  
+✅ Responsive design (mobile-friendly)  
+✅ Chỉ chạy được trên Vercel   
+
+---
+
 ## �💾 Yêu cầu hệ thống
 
 - Node.js >= 16.x
@@ -12,9 +25,15 @@
 
 ---
 
-## ✨ Setup Local
+## Setup Local
 
-### 1. Cài đặt dependencies
+### 1. Cài đặt 
+```bash
+git clone https://github.com/bquang2k6/mini-upload.git
+```
+```bash
+cd thư mục gì đó
+```
 ```bash
 npm install
 ```
@@ -25,21 +44,45 @@ Copy từ `.env.example`:
 cp .env.example .env
 ```
 
-### 3. Điền Google Drive API credentials vào `.env` ( cách lấy Drive API ở dưới cùng )
-```env
-YOUR_CLIENT_ID=xxx.apps.googleusercontent.com
-YOUR_CLIENT_SECRET=xxx
-YOUR_REDIRECT_URI=https://developers.google.com/oauthplayground
-YOUR_REFRESH_TOKEN=xxx
-```
 
 
-## Deploy trên Vercel
+
+# Deploy trên Vercel
 
 ### Bước 1: Chuẩn bị Google Drive API credentials
-- Kéo xuống dưới để xem
+#### Lấy Google Drive API credentials:
 
-### Bước 1: Deploy với Vercel
+**Bước 1: Tạo OAuth Client ID trên Google Cloud**  
+- Truy cập [Google Cloud Console](https://console.cloud.google.com/)
+- Tạo project mới (hoặc chọn project bạn muốn dùng)
+- Vào **APIs & Services > Credentials**
+- Nhấn **Create Credentials > OAuth client ID**
+- Application type: chọn **Web application**
+- Authorized redirect URIs: thêm dòng:
+  ```
+  https://developers.google.com/oauthplayground
+  ```
+- Nhấn **Create** và copy **Client ID** và **Client Secret**
+
+**Bước 2: Bật Google Drive API**  
+- Vào **APIs & Services > Library**
+- Tìm **Google Drive API** > **Enable**
+
+**Bước 3: Lấy Refresh Token**  
+- Vào [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/)
+- Nhấn biểu tượng bánh răng (cài đặt) → chọn **Use your own OAuth credentials**
+- Nhập **Client ID** và **Client Secret**
+- Ở Step 1, tìm **Drive API v3** > tick:
+  ```
+  https://www.googleapis.com/auth/drive
+  ```
+- Nhấn **Authorize APIs**, đăng nhập Google, cấp quyền, quay lại playground
+- Nhấn **Exchange authorization code for tokens**
+- Copy **Refresh token** và điền vào `server.js`
+
+---
+
+### Bước 2: Deploy với Vercel
 ```bash
 npm install -g vercel
 vercel
@@ -85,54 +128,10 @@ vercel --prod
 └── README.md                   # File này
 ```
 
----
 
-## Tính năng
 
-✅ Upload file lên Google Drive  
-✅ Tạo & quản lý folder  
-✅ Download file  
-✅ Xóa file  
-✅ Chia sẻ file (public link)  
-✅ Xem dung lượng sử dụng  
-✅ Responsive design (mobile-friendly)  
-✅ Chỉ chạy được trên Vercel   
 
----
 
-```
-
-#### Cách lấy Google Drive API credentials:
-
-**Bước 1: Tạo OAuth Client ID trên Google Cloud**  
-- Truy cập [Google Cloud Console](https://console.cloud.google.com/)
-- Tạo project mới (hoặc chọn project bạn muốn dùng)
-- Vào **APIs & Services > Credentials**
-- Nhấn **Create Credentials > OAuth client ID**
-- Application type: chọn **Web application**
-- Authorized redirect URIs: thêm dòng:
-  ```
-  https://developers.google.com/oauthplayground
-  ```
-- Nhấn **Create** và copy **Client ID** và **Client Secret**
-
-**Bước 2: Bật Google Drive API**  
-- Vào **APIs & Services > Library**
-- Tìm **Google Drive API** > **Enable**
-
-**Bước 3: Lấy Refresh Token**  
-- Vào [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/)
-- Nhấn biểu tượng bánh răng (cài đặt) → chọn **Use your own OAuth credentials**
-- Nhập **Client ID** và **Client Secret**
-- Ở Step 1, tìm **Drive API v3** > tick:
-  ```
-  https://www.googleapis.com/auth/drive
-  ```
-- Nhấn **Authorize APIs**, đăng nhập Google, cấp quyền, quay lại playground
-- Nhấn **Exchange authorization code for tokens**
-- Copy **Refresh token** và điền vào `server.js`
-
----
 
 ## 📢 Lưu ý bảo mật
 
@@ -161,7 +160,7 @@ vercel --prod
   <span style="color: inherit; font-size: 14px;">Locket Wan</span>
 </a>
 
-<a href="https://locket-tdtu.wangtech.top" target="_blank" style="text-decoration: none; text-align: center; display: inline-block;">
+<a href="https://locket-tdtu.wangtech.top" target="_blank" style="text-decoration: none; text-align: center; display: inline-block; margin-left: 30px">
   <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="phamquang2k6" height="30" width="30" />
   <br>
   <span style="color: inherit; font-size: 14px;">Locket TDTU</span>
