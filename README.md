@@ -154,14 +154,16 @@ vercel --prod
 
 <h3 align="left">Một số dự án của tôi:</h3>
 <p align="left">
-<a href="https://locket.wangtech.top" target="_blank" style="text-decoration: none; text-align: center; display: inline-block;">
-  <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="phamquang2k6" height="30" width="30" />
-  <br>
-  <span style="color: inherit; font-size: 14px;">Locket Wan</span>
-</a>
+  <a class="project" href="https://locket.wangtech.top" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; text-align:center; margin-right:30px;">
+    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket Wan" height="30" width="30" />
+    <br>
+    <span style="font-size:14px; color:inherit;">Locket Wan</span>
+  </a>
 
-<a href="https://locket-tdtu.wangtech.top" target="_blank" style="text-decoration: none; text-align: center; display: inline-block; margin-left: 30px">
-  <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="phamquang2k6" height="30" width="30" />
-  <br>
-  <span style="color: inherit; font-size: 14px;">Locket TDTU</span>
-</a>
+  <a class="project" href="https://locket-tdtu.wangtech.top" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:inline-block; text-align:center;">
+    <img src="https://locket.wangtech.top/icons8-heart-100.png" alt="Locket TDTU" height="30" width="30" />
+    <br>
+    <span style="font-size:14px; color:inherit;">Locket TDTU</span>
+  </a>
+</p>
+
