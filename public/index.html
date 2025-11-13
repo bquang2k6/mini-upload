@@ -1313,7 +1313,7 @@ function renderFileRow(f) {
 
 // ==== Fetch & display files ====
 async function fetchFiles(folderId) {
-  const url = folderId ? `/files?parentId=${encodeURIComponent(folderId)}` : 'https://mini-upload.vercel.app/files';
+  const url = `/files${folderId ? '?parentId=' + encodeURIComponent(folderId) : ''}`;
   const res = await fetch(url);
   const files = await res.json();
   const tbody = document.getElementById('fileListBody');
